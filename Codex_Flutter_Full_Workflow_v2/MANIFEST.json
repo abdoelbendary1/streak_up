@@ -1,0 +1,13 @@
+{
+  "title": "Codex Flutter Full Workflow Pack v2",
+  "release_date": "2026-09-30",
+  "custom_skills": [
+    "flutter-ui-fidelity",
+    "flutter-architecture-guard",
+    "flutter-feature-implementer",
+    "codex-efficient-workflow"
+  ],
+  "prompts": 10,
+  "official_skills": "External; install upstream through confirmed Flutter plugin OR standalone installer; not bundled",
+  "installation_safety": "Project-local; skill collisions skipped; AGENTS.md append opt-in backed-up; scripts do not modify code or databases"
+}
