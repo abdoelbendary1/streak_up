@@ -119,5 +119,64 @@ void main() {
         expect(authCubit.state.activeFailure, isNull);
       },
     );
+    test(
+      'sign-in reports failure, then clears it after a successful retry',
+      () async {
+        final emittedStates = <AuthState>[];
+        final subscription = authCubit.stream.listen(emittedStates.add);
+        gateway.signInResponses['user@example.com'] = const AuthOutcome.failure(
+          AuthFailure(AuthFailureCode.invalidCredentials),
+        );
+
+        final firstAttempt = await authCubit.signIn(
+          email: 'user@example.com',
+          password: 'test-password',
+        );
+        expect(firstAttempt, isFalse);
+        expect(authCubit.state.isSubmitting, isFalse);
+        expect(
+          authCubit.state.activeFailure?.code,
+          AuthFailureCode.invalidCredentials,
+        );
+
+        gateway.signInResponses.remove('user@example.com');
+        final retry = await authCubit.signIn(
+          email: 'user@example.com',
+          password: 'test-password',
+        );
+        expect(retry, isTrue);
+        expect(authCubit.state.status, AuthAccountStatus.authenticated);
+        expect(authCubit.state.activeFailure, isNull);
+        expect(authCubit.state.isSubmitting, isFalse);
+        expect(emittedStates.where((state) => state.isSubmitting).length, 2);
+        await subscription.cancel();
+      },
+    );
+
+    test(
+      'recovery resend retains its receipt and distinct confirmation',
+      () async {
+        final requested = await authCubit.requestPasswordRecovery(
+          email: 'user@example.com',
+        );
+        expect(requested, isTrue);
+        expect(
+          authCubit.state.lastRecoveryReceipt?.submittedEmail,
+          'user@example.com',
+        );
+        expect(authCubit.state.infoMessageKey, isNull);
+
+        final resent = await authCubit.resendPasswordRecovery();
+        expect(resent, isTrue);
+        expect(
+          authCubit.state.lastRecoveryReceipt?.submittedEmail,
+          'user@example.com',
+        );
+        expect(
+          authCubit.state.infoMessageKey,
+          AuthInfoMessageKey.recoveryEmailResent,
+        );
+      },
+    );
   });
 }

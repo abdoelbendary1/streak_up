@@ -128,6 +128,29 @@ class AuthCubit extends Cubit<AuthState> {
     );
   }
 
+  void _beginSubmission() {
+    emit(
+      state.copyWith(
+        isSubmitting: true,
+        clearFailure: true,
+        clearInfoMessage: true,
+      ),
+    );
+  }
+
+  bool _finishAccountAction(AuthOutcome<AuthAccountState> outcome) {
+    if (isClosed) return false;
+
+    switch (outcome) {
+      case AuthSuccess<AuthAccountState>():
+        emit(state.copyWith(isSubmitting: false, clearFailure: true));
+        return true;
+      case AuthFailureOutcome<AuthAccountState>(:final failure):
+        emit(state.copyWith(isSubmitting: false, activeFailure: failure));
+        return false;
+    }
+  }
+
   Future<void> restoreInitialSession() async {
     emit(state.copyWith(isSubmitting: true, clearFailure: true));
     final snapshot = await _coordinator.restoreInitialSession();
@@ -144,26 +167,9 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<bool> signIn({required String email, required String password}) async {
-    emit(
-      state.copyWith(
-        isSubmitting: true,
-        clearFailure: true,
-        clearInfoMessage: true,
-      ),
-    );
+    _beginSubmission();
     final outcome = await _coordinator.signIn(email: email, password: password);
-    if (isClosed) return false;
-
-    return switch (outcome) {
-      AuthSuccess<AuthAccountState>() => () {
-        emit(state.copyWith(isSubmitting: false, clearFailure: true));
-        return true;
-      }(),
-      AuthFailureOutcome<AuthAccountState>(:final failure) => () {
-        emit(state.copyWith(isSubmitting: false, activeFailure: failure));
-        return false;
-      }(),
-    };
+    return _finishAccountAction(outcome);
   }
 
   Future<bool> register({
@@ -181,67 +187,27 @@ class AuthCubit extends Cubit<AuthState> {
       return false;
     }
 
-    emit(
-      state.copyWith(
-        isSubmitting: true,
-        clearFailure: true,
-        clearInfoMessage: true,
-      ),
-    );
+    _beginSubmission();
     final outcome = await _coordinator.register(
       email: email,
       password: password,
     );
-    if (isClosed) return false;
-
-    return switch (outcome) {
-      AuthSuccess<AuthAccountState>() => () {
-        emit(state.copyWith(isSubmitting: false, clearFailure: true));
-        return true;
-      }(),
-      AuthFailureOutcome<AuthAccountState>(:final failure) => () {
-        emit(state.copyWith(isSubmitting: false, activeFailure: failure));
-        return false;
-      }(),
-    };
+    return _finishAccountAction(outcome);
   }
 
   Future<bool> checkEmailVerification({String? email}) async {
-    emit(
-      state.copyWith(
-        isSubmitting: true,
-        clearFailure: true,
-        clearInfoMessage: true,
-      ),
-    );
+    _beginSubmission();
     final outcome = await _coordinator.checkEmailVerification(email: email);
-    if (isClosed) return false;
-
-    return switch (outcome) {
-      AuthSuccess<AuthAccountState>() => () {
-        emit(state.copyWith(isSubmitting: false, clearFailure: true));
-        return true;
-      }(),
-      AuthFailureOutcome<AuthAccountState>(:final failure) => () {
-        emit(state.copyWith(isSubmitting: false, activeFailure: failure));
-        return false;
-      }(),
-    };
+    return _finishAccountAction(outcome);
   }
 
   Future<bool> resendVerificationEmail({String? email}) async {
-    emit(
-      state.copyWith(
-        isSubmitting: true,
-        clearFailure: true,
-        clearInfoMessage: true,
-      ),
-    );
+    _beginSubmission();
     final outcome = await _coordinator.resendVerificationEmail(email: email);
     if (isClosed) return false;
 
-    return switch (outcome) {
-      AuthSuccess<void>() => () {
+    switch (outcome) {
+      case AuthSuccess<void>():
         emit(
           state.copyWith(
             isSubmitting: false,
@@ -249,27 +215,19 @@ class AuthCubit extends Cubit<AuthState> {
           ),
         );
         return true;
-      }(),
-      AuthFailureOutcome<void>(:final failure) => () {
+      case AuthFailureOutcome<void>(:final failure):
         emit(state.copyWith(isSubmitting: false, activeFailure: failure));
         return false;
-      }(),
-    };
+    }
   }
 
   Future<bool> requestPasswordRecovery({required String email}) async {
-    emit(
-      state.copyWith(
-        isSubmitting: true,
-        clearFailure: true,
-        clearInfoMessage: true,
-      ),
-    );
+    _beginSubmission();
     final outcome = await _coordinator.requestPasswordRecovery(email: email);
     if (isClosed) return false;
 
-    return switch (outcome) {
-      AuthSuccess<PasswordRecoveryRequestReceipt>(:final value) => () {
+    switch (outcome) {
+      case AuthSuccess<PasswordRecoveryRequestReceipt>(:final value):
         emit(
           state.copyWith(
             isSubmitting: false,
@@ -278,12 +236,10 @@ class AuthCubit extends Cubit<AuthState> {
           ),
         );
         return true;
-      }(),
-      AuthFailureOutcome<PasswordRecoveryRequestReceipt>(:final failure) => () {
+      case AuthFailureOutcome<PasswordRecoveryRequestReceipt>(:final failure):
         emit(state.copyWith(isSubmitting: false, activeFailure: failure));
         return false;
-      }(),
-    };
+    }
   }
 
   Future<bool> resendPasswordRecovery() async {
@@ -291,18 +247,12 @@ class AuthCubit extends Cubit<AuthState> {
     if (email == null || email.trim().isEmpty) {
       return false;
     }
-    emit(
-      state.copyWith(
-        isSubmitting: true,
-        clearFailure: true,
-        clearInfoMessage: true,
-      ),
-    );
+    _beginSubmission();
     final outcome = await _coordinator.requestPasswordRecovery(email: email);
     if (isClosed) return false;
 
-    return switch (outcome) {
-      AuthSuccess<PasswordRecoveryRequestReceipt>(:final value) => () {
+    switch (outcome) {
+      case AuthSuccess<PasswordRecoveryRequestReceipt>(:final value):
         emit(
           state.copyWith(
             isSubmitting: false,
@@ -311,12 +261,10 @@ class AuthCubit extends Cubit<AuthState> {
           ),
         );
         return true;
-      }(),
-      AuthFailureOutcome<PasswordRecoveryRequestReceipt>(:final failure) => () {
+      case AuthFailureOutcome<PasswordRecoveryRequestReceipt>(:final failure):
         emit(state.copyWith(isSubmitting: false, activeFailure: failure));
         return false;
-      }(),
-    };
+    }
   }
 
   Future<bool> submitNewPassword({
@@ -333,28 +281,11 @@ class AuthCubit extends Cubit<AuthState> {
       return false;
     }
 
-    emit(
-      state.copyWith(
-        isSubmitting: true,
-        clearFailure: true,
-        clearInfoMessage: true,
-      ),
-    );
+    _beginSubmission();
     final outcome = await _coordinator.submitRecoveredPassword(
       newPassword: newPassword,
     );
-    if (isClosed) return false;
-
-    return switch (outcome) {
-      AuthSuccess<AuthAccountState>() => () {
-        emit(state.copyWith(isSubmitting: false, clearFailure: true));
-        return true;
-      }(),
-      AuthFailureOutcome<AuthAccountState>(:final failure) => () {
-        emit(state.copyWith(isSubmitting: false, activeFailure: failure));
-        return false;
-      }(),
-    };
+    return _finishAccountAction(outcome);
   }
 
   Future<bool> requestSignOut({bool forceAfterWarning = false}) {
