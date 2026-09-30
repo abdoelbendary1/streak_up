@@ -252,6 +252,74 @@ void main() {
     );
 
     test(
+      'temporary and unknown restore failures retain cached account evidence',
+      () async {
+        driver.cachedSession = RawProviderSessionSnapshot(
+          userId: 'acc-cached',
+          email: 'cached@example.com',
+          emailConfirmedAt: DateTime.utc(2026, 9, 28),
+        );
+        for (final error in <Object>[
+          const SocketException('Network unreachable'),
+          TimeoutException('Auth request timed out'),
+          const AuthException('Service unavailable', statusCode: '503'),
+          StateError('Unexpected response'),
+        ]) {
+          driver.refreshError = error;
+          final (state, condition) = await gateway.restoreInitialSession();
+          expect(state, isA<AuthAuthenticatedState>());
+          expect(state.activeAccountId, AccountId('acc-cached'));
+          expect(
+            (state as AuthAuthenticatedState).session.evidenceSource,
+            SessionEvidenceSource.persistedVerifiedSessionOffline,
+          );
+          expect(
+            condition,
+            AuthConnectionCondition.offlineOrBackendUnreachable,
+          );
+        }
+        driver.refreshError = null;
+        driver.refreshResult = null;
+        final (unknownState, unknownCondition) = await gateway
+            .restoreInitialSession();
+        expect(unknownState, isA<AuthAuthenticatedState>());
+        expect(
+          unknownCondition,
+          AuthConnectionCondition.offlineOrBackendUnreachable,
+        );
+      },
+    );
+
+    test(
+      'only explicit refresh rejection invalidates; successful refresh is remote verified',
+      () async {
+        driver.cachedSession = RawProviderSessionSnapshot(
+          userId: 'acc-cached',
+          email: 'cached@example.com',
+          emailConfirmedAt: DateTime.utc(2026, 9, 28),
+        );
+        for (final error in <AuthException>[
+          const AuthException('Expired session', statusCode: '401'),
+          const AuthException('Invalid refresh', code: 'invalid_refresh_token'),
+        ]) {
+          driver.refreshError = error;
+          final (state, condition) = await gateway.restoreInitialSession();
+          expect(state, isA<AuthReauthenticationRequiredState>());
+          expect(condition, AuthConnectionCondition.normal);
+        }
+        driver.refreshError = null;
+        driver.refreshResult = driver.cachedSession;
+        final (restored, condition) = await gateway.restoreInitialSession();
+        expect(restored, isA<AuthAuthenticatedState>());
+        expect(
+          (restored as AuthAuthenticatedState).session.evidenceSource,
+          SessionEvidenceSource.remoteSessionVerified,
+        );
+        expect(condition, AuthConnectionCondition.normal);
+      },
+    );
+
+    test(
       'ingestAuthCallbackUri rejects untrusted redirect origins and validates recovery context',
       () async {
         final untrusted = await gateway.ingestAuthCallbackUri(

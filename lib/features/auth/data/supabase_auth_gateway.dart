@@ -40,10 +40,7 @@ enum RawProviderAuthEventKind {
 
 @immutable
 class RawProviderAuthEvent {
-  const RawProviderAuthEvent({
-    required this.kind,
-    this.session,
-  });
+  const RawProviderAuthEvent({required this.kind, this.session});
 
   final RawProviderAuthEventKind kind;
   final RawProviderSessionSnapshot? session;
@@ -80,7 +77,7 @@ abstract interface class SupabaseAuthClientDriver {
   });
 
   Future<(RawProviderSessionSnapshot?, bool isPasswordRecovery)>
-      getSessionFromUrl(Uri callbackUri);
+  getSessionFromUrl(Uri callbackUri);
 
   Future<RawProviderSessionSnapshot?> updatePassword(String newPassword);
 
@@ -180,9 +177,10 @@ class GoTrueSupabaseAuthClientDriver implements SupabaseAuthClientDriver {
 
   @override
   Future<(RawProviderSessionSnapshot?, bool isPasswordRecovery)>
-      getSessionFromUrl(Uri callbackUri) async {
+  getSessionFromUrl(Uri callbackUri) async {
     final response = await _auth.getSessionFromUrl(callbackUri);
-    final isRecovery = response.redirectType?.toLowerCase() == 'recovery' ||
+    final isRecovery =
+        response.redirectType?.toLowerCase() == 'recovery' ||
         callbackUri.queryParameters['type']?.toLowerCase() == 'recovery' ||
         callbackUri.fragment.toLowerCase().contains('type=recovery');
     return (
@@ -229,11 +227,7 @@ class GoTrueSupabaseAuthClientDriver implements SupabaseAuthClientDriver {
 /// Data-layer implementation of [AuthGateway] backed by `supabase_flutter` (`T008`–`T012`).
 @LazySingleton(as: AuthGateway)
 class SupabaseAuthGateway implements AuthGateway {
-  SupabaseAuthGateway(
-    this._driver,
-    this._environmentConfig,
-    this._logger,
-  ) {
+  SupabaseAuthGateway(this._driver, this._environmentConfig, this._logger) {
     _subscription = _driver.onAuthStateChange.listen(_handleProviderAuthEvent);
   }
 
@@ -258,8 +252,9 @@ class SupabaseAuthGateway implements AuthGateway {
       case RawProviderAuthEventKind.passwordRecovery:
         _hasValidatedPasswordResetContext = true;
         final session = event.session;
-        final accountId =
-            session != null ? AccountId(session.userId) : _lastVerifiedAccountId;
+        final accountId = session != null
+            ? AccountId(session.userId)
+            : _lastVerifiedAccountId;
         _signalController.add(
           AuthGatewayPasswordRecoveryReadySignal(
             accountId: accountId,
@@ -311,7 +306,7 @@ class SupabaseAuthGateway implements AuthGateway {
 
   @override
   Future<(AuthAccountState, AuthConnectionCondition)>
-      restoreInitialSession() async {
+  restoreInitialSession() async {
     final cached = _driver.currentSession;
     if (cached == null) {
       return (
@@ -335,6 +330,16 @@ class SupabaseAuthGateway implements AuthGateway {
     try {
       final refreshed = await _driver.refreshOrFetchUser();
       if (refreshed == null) {
+        return _preserveCachedSessionWhileUnavailable(cached);
+      }
+      final state = _mapSnapshotToState(
+        refreshed,
+        evidenceSource: SessionEvidenceSource.remoteSessionVerified,
+      );
+      return (state, AuthConnectionCondition.normal);
+    } catch (error) {
+      if (_isConfirmedSessionInvalidation(error)) {
+        _logger.warning('auth.restore.invalidated');
         return (
           AuthAccountState.reauthenticationRequired(
             previousAccountId: AccountId(cached.userId),
@@ -343,46 +348,32 @@ class SupabaseAuthGateway implements AuthGateway {
           AuthConnectionCondition.normal,
         );
       }
-      final state = _mapSnapshotToState(
-        refreshed,
-        evidenceSource: SessionEvidenceSource.remoteSessionVerified,
-      );
-      return (state, AuthConnectionCondition.normal);
-    } catch (error) {
-      // Transport/offline errors must NOT invalidate a persisted verified session (`SL02-FR-006`, `SL02-AS-09`–`10`).
-      if (_isTransportOrReachabilityError(error)) {
-        _logger.info(
-          'auth.restore.offline_preserved',
-          metadata: <String, Object?>{
-            'networkState': 'offline',
-          },
-        );
-        final offlineState = _mapSnapshotToState(
-          cached,
-          evidenceSource:
-              SessionEvidenceSource.persistedVerifiedSessionOffline,
-        );
-        return (
-          offlineState,
-          AuthConnectionCondition.offlineOrBackendUnreachable,
-        );
-      }
-
-      // Confirmed auth/token rejection transitions to reauthenticationRequired (`SL02-FR-007`).
-      _logger.warning(
-        'auth.restore.invalidated',
-        metadata: <String, Object?>{
-          'errorType': error.runtimeType.toString(),
-        },
-      );
-      return (
-        AuthAccountState.reauthenticationRequired(
-          previousAccountId: AccountId(cached.userId),
-          emailHint: cached.email,
-        ),
-        AuthConnectionCondition.normal,
-      );
+      // Transport, temporary service failure, and unknown errors do not prove
+      // that the persisted account was revoked.
+      return _preserveCachedSessionWhileUnavailable(cached);
     }
+  }
+
+  (AuthAccountState, AuthConnectionCondition)
+  _preserveCachedSessionWhileUnavailable(RawProviderSessionSnapshot cached) {
+    _logger.info('auth.restore.verification_unavailable');
+    return (
+      _mapSnapshotToState(
+        cached,
+        evidenceSource: SessionEvidenceSource.persistedVerifiedSessionOffline,
+      ),
+      AuthConnectionCondition.offlineOrBackendUnreachable,
+    );
+  }
+
+  static bool _isConfirmedSessionInvalidation(Object error) {
+    if (error is! AuthException) return false;
+    final code = (error.code ?? '').toLowerCase();
+    return error.statusCode == '401' ||
+        error.statusCode == '403' ||
+        code == 'session_not_found' ||
+        code == 'refresh_token_not_found' ||
+        code == 'invalid_refresh_token';
   }
 
   @override
@@ -571,8 +562,9 @@ class SupabaseAuthGateway implements AuthGateway {
     }
 
     try {
-      final (snapshot, isPasswordRecovery) =
-          await _driver.getSessionFromUrl(callbackUri);
+      final (snapshot, isPasswordRecovery) = await _driver.getSessionFromUrl(
+        callbackUri,
+      );
       if (isPasswordRecovery) {
         _hasValidatedPasswordResetContext = true;
         if (snapshot != null && snapshot.isEmailVerified) {
@@ -605,7 +597,7 @@ class SupabaseAuthGateway implements AuthGateway {
     } catch (error) {
       final isRecoveryCallback =
           callbackUri.queryParameters['type']?.toLowerCase() == 'recovery' ||
-              callbackUri.fragment.toLowerCase().contains('type=recovery');
+          callbackUri.fragment.toLowerCase().contains('type=recovery');
       final failure = _mapErrorToFailure(
         error,
         isRecoveryLink: isRecoveryCallback,
@@ -739,7 +731,8 @@ class SupabaseAuthGateway implements AuthGateway {
     if (error is AuthException) {
       final code = (error.code ?? '').toLowerCase();
       final msg = error.message.toLowerCase();
-      if (code == 'email_not_confirmed' || msg.contains('email not confirmed')) {
+      if (code == 'email_not_confirmed' ||
+          msg.contains('email not confirmed')) {
         return const AuthFailure(AuthFailureCode.verificationStillPending);
       }
       if (code == 'user_already_exists' ||
@@ -758,9 +751,7 @@ class SupabaseAuthGateway implements AuthGateway {
       if (isRecoveryLink ||
           code == 'otp_expired' && isRecoveryLink ||
           msg.contains('recovery')) {
-        return const AuthFailure(
-          AuthFailureCode.recoveryLinkExpiredOrInvalid,
-        );
+        return const AuthFailure(AuthFailureCode.recoveryLinkExpiredOrInvalid);
       }
       if (isVerificationLink || code == 'otp_expired' || code == 'bad_jwt') {
         return const AuthFailure(

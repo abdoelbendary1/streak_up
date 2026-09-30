@@ -27,6 +27,7 @@ class FakeAuthGateway implements AuthGateway {
       <String, AuthOutcome<AuthAccountState>>{};
 
   int signOutCount = 0;
+  final List<String> submittedPasswords = <String>[];
 
   @override
   Stream<AuthGatewaySignal> get signals => signalController.stream;
@@ -50,6 +51,7 @@ class FakeAuthGateway implements AuthGateway {
     required String email,
     required String password,
   }) async {
+    submittedPasswords.add(password);
     final mapped = signInResponses[email];
     if (mapped != null) return mapped;
     return AuthOutcome.success(
@@ -299,6 +301,108 @@ void main() {
           coordinator.snapshot.activeAccountId,
           AccountId('acc-b@example.com'),
         );
+      },
+    );
+
+    test(
+      'pending switch password is absent from snapshots and cannot be reused after cancel or transition',
+      () async {
+        pendingProvider.presence = PendingWorkPresence.none;
+        await coordinator.signIn(
+          email: 'a@example.com',
+          password: 'first-test-password',
+        );
+        pendingProvider.presence = PendingWorkPresence.pending;
+
+        await coordinator.signIn(
+          email: 'b@example.com',
+          password: 'second-test-password',
+        );
+        final prompt = coordinator.snapshot.activeExitPrompt;
+        expect(prompt?.kind, PendingExitKind.switchAccount);
+        expect(prompt.toString(), isNot(contains('second-test-password')));
+        expect(
+          coordinator.snapshot.toString(),
+          isNot(contains('second-test-password')),
+        );
+        expect(gateway.submittedPasswords, <String>['first-test-password']);
+
+        coordinator.cancelPendingExitPrompt();
+        await coordinator.confirmPendingExitPrompt();
+        expect(
+          coordinator.snapshot.activeAccountId,
+          AccountId('acc-a@example.com'),
+        );
+        expect(gateway.submittedPasswords, <String>['first-test-password']);
+
+        await coordinator.signIn(
+          email: 'b@example.com',
+          password: 'third-test-password',
+        );
+        await coordinator.handleConfirmedSessionInvalidation();
+        await coordinator.confirmPendingExitPrompt();
+        expect(gateway.submittedPasswords, <String>['first-test-password']);
+        expect(coordinator.snapshot.activeExitPrompt, isNull);
+      },
+    );
+
+    test(
+      'a new account action replaces an old pending switch without reusing its password',
+      () async {
+        pendingProvider.presence = PendingWorkPresence.none;
+        await coordinator.signIn(
+          email: 'a@example.com',
+          password: 'first-test-password',
+        );
+        pendingProvider.presence = PendingWorkPresence.pending;
+        await coordinator.signIn(
+          email: 'b@example.com',
+          password: 'old-test-password',
+        );
+
+        await coordinator.requestAccountSwitch(
+          nextEmail: 'c@example.com',
+          nextPassword: 'new-test-password',
+        );
+        await coordinator.confirmPendingExitPrompt();
+
+        expect(gateway.submittedPasswords, <String>[
+          'first-test-password',
+          'new-test-password',
+        ]);
+        expect(
+          coordinator.snapshot.activeAccountId,
+          AccountId('acc-c@example.com'),
+        );
+      },
+    );
+
+    test(
+      'confirmed switch consumes one pending password and failed switch cannot retry it',
+      () async {
+        pendingProvider.presence = PendingWorkPresence.none;
+        await coordinator.signIn(
+          email: 'a@example.com',
+          password: 'first-test-password',
+        );
+        pendingProvider.presence = PendingWorkPresence.pending;
+        gateway.signInResponses['b@example.com'] = const AuthOutcome.failure(
+          AuthFailure(AuthFailureCode.invalidCredentials),
+        );
+
+        await coordinator.requestAccountSwitch(
+          nextEmail: 'b@example.com',
+          nextPassword: 'second-test-password',
+        );
+        await coordinator.confirmPendingExitPrompt();
+        await coordinator.confirmPendingExitPrompt();
+
+        expect(gateway.submittedPasswords, <String>[
+          'first-test-password',
+          'second-test-password',
+        ]);
+        expect(coordinator.snapshot.activeExitPrompt, isNull);
+        expect(coordinator.snapshot.accountState, isA<AuthSignedOutState>());
       },
     );
   });

@@ -19,14 +19,12 @@ class PendingAccountExitPrompt {
     required this.presence,
     required this.accountId,
     this.nextEmail,
-    this.nextPassword,
   });
 
   final PendingExitKind kind;
   final PendingWorkPresence presence;
   final AccountId accountId;
   final String? nextEmail;
-  final String? nextPassword;
 }
 
 /// Snapshot emitted by [AuthSessionCoordinator] (`T014`–`T018`).
@@ -121,6 +119,8 @@ class AuthSessionCoordinator extends ChangeNotifier {
 
   /// Single-flight tail future ensuring account transitions never interleave (`T015`).
   Future<void>? _transitionTail;
+  // Kept outside emitted snapshots and cleared whenever the prompt ends.
+  String? _pendingSwitchPassword;
 
   static const Set<String> _allowedSavedRoutePrefixes = <String>{
     '/today',
@@ -257,6 +257,7 @@ class AuthSessionCoordinator extends ChangeNotifier {
     bool forceSwitchAfterWarning = false,
   }) {
     return _enqueueTransition(() async {
+      cancelPendingExitPrompt();
       final currentAccountId = _snapshot.activeAccountId;
       // If an authenticated session is already active, treat signing into another
       // account as an account switch and inspect PendingWorkPresence first (`T018`, `SL02-FR-009`).
@@ -265,6 +266,7 @@ class AuthSessionCoordinator extends ChangeNotifier {
           currentAccountId,
         );
         if (presence.requiresRetentionWarning) {
+          _pendingSwitchPassword = password;
           _emit(
             _snapshot.copyWith(
               activeExitPrompt: PendingAccountExitPrompt(
@@ -272,7 +274,6 @@ class AuthSessionCoordinator extends ChangeNotifier {
                 presence: presence,
                 accountId: currentAccountId,
                 nextEmail: email,
-                nextPassword: password,
               ),
             ),
           );
@@ -393,12 +394,14 @@ class AuthSessionCoordinator extends ChangeNotifier {
   /// warning prompt before tearing down the account session unless [forceAfterWarning] is true.
   Future<bool> requestSignOut({bool forceAfterWarning = false}) {
     return _enqueueTransition(() async {
+      cancelPendingExitPrompt();
       final currentAccountId = _snapshot.activeAccountId;
       if (currentAccountId != null && !forceAfterWarning) {
         final presence = await _pendingWorkProvider.checkPendingWork(
           currentAccountId,
         );
         if (presence.requiresRetentionWarning) {
+          _pendingSwitchPassword = null;
           _emit(
             _snapshot.copyWith(
               activeExitPrompt: PendingAccountExitPrompt(
@@ -429,12 +432,14 @@ class AuthSessionCoordinator extends ChangeNotifier {
     String? nextPassword,
   }) {
     return _enqueueTransition(() async {
+      cancelPendingExitPrompt();
       final currentAccountId = _snapshot.activeAccountId;
       if (currentAccountId != null && !forceAfterWarning) {
         final presence = await _pendingWorkProvider.checkPendingWork(
           currentAccountId,
         );
         if (presence.requiresRetentionWarning) {
+          _pendingSwitchPassword = nextPassword;
           _emit(
             _snapshot.copyWith(
               activeExitPrompt: PendingAccountExitPrompt(
@@ -442,7 +447,6 @@ class AuthSessionCoordinator extends ChangeNotifier {
                 presence: presence,
                 accountId: currentAccountId,
                 nextEmail: nextEmail,
-                nextPassword: nextPassword,
               ),
             ),
           );
@@ -478,6 +482,7 @@ class AuthSessionCoordinator extends ChangeNotifier {
 
   /// Cancels a pending sign-out or switch warning (`Stay Signed In` / `Stay on This Account`).
   void cancelPendingExitPrompt() {
+    _pendingSwitchPassword = null;
     if (_snapshot.activeExitPrompt != null) {
       _emit(_snapshot.copyWith(clearActiveExitPrompt: true));
     }
@@ -489,6 +494,8 @@ class AuthSessionCoordinator extends ChangeNotifier {
     if (prompt == null) {
       return;
     }
+    final nextPassword = _pendingSwitchPassword;
+    _pendingSwitchPassword = null;
     _emit(_snapshot.copyWith(clearActiveExitPrompt: true));
     switch (prompt.kind) {
       case PendingExitKind.signOut:
@@ -497,7 +504,7 @@ class AuthSessionCoordinator extends ChangeNotifier {
         await requestAccountSwitch(
           forceAfterWarning: true,
           nextEmail: prompt.nextEmail,
-          nextPassword: prompt.nextPassword,
+          nextPassword: nextPassword,
         );
     }
   }
@@ -561,6 +568,7 @@ class AuthSessionCoordinator extends ChangeNotifier {
     required AuthConnectionCondition connectionCondition,
     required bool clearSavedDestination,
   }) async {
+    _pendingSwitchPassword = null;
     final previousAccountId = _snapshot.activeAccountId;
     final nextAccountId = nextState.activeAccountId;
     final accountBoundaryChanged = previousAccountId != nextAccountId;
@@ -651,6 +659,7 @@ class AuthSessionCoordinator extends ChangeNotifier {
   @override
   @disposeMethod
   void dispose() {
+    _pendingSwitchPassword = null;
     _gatewaySubscription?.cancel();
     _streamController.close();
     super.dispose();
