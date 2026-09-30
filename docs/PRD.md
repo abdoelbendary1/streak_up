@@ -883,14 +883,14 @@ Target date: `[TBD]` — establish after architecture and implementation plannin
 
 - PRD Path: `docs/PRD.md`
 - PRD Version: v1.0
-- PRD Status: Draft — Ready for Product Review
+- PRD Status: Approved — v1 Baseline
 - Last Updated: 2026-09-28
 - Product Owner: Abdelrahman Elbendary
 
 ### Approved Scope
 
 - P0: P0-F001 through P0-F013
-- P1: P1-F001 through P1-F008
+- P1: P1-F001 through P1-F008 (v1 if schedule allows)
 - Deferred: P3-F001 through P3-F011
 
 ### Requirement Range

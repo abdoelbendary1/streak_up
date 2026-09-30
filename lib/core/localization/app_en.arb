@@ -1,0 +1,362 @@
+{
+  "@@locale": "en",
+  "brandName": "StreakUp",
+  "@brandName": {
+    "description": "The primary product brand name."
+  },
+  "brandTagline": "Small steps today for a brighter tomorrow.",
+  "@brandTagline": {
+    "description": "Approved brand tagline."
+  },
+  "navToday": "Today",
+  "@navToday": {
+    "description": "Primary bottom navigation label for Today."
+  },
+  "navHabits": "Habits",
+  "@navHabits": {
+    "description": "Primary bottom navigation label for Habits."
+  },
+  "navChallenges": "Challenges",
+  "@navChallenges": {
+    "description": "Primary bottom navigation label for Challenges."
+  },
+  "navFriends": "Friends",
+  "@navFriends": {
+    "description": "Primary bottom navigation label for Friends."
+  },
+  "navSemanticsSelected": "{destination}, selected tab",
+  "@navSemanticsSelected": {
+    "description": "Accessible label for the selected bottom navigation destination.",
+    "placeholders": {
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
+  "navSemanticsUnselected": "{destination} tab",
+  "@navSemanticsUnselected": {
+    "description": "Accessible label for an unselected bottom navigation destination.",
+    "placeholders": {
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
+  "actionInbox": "Inbox",
+  "@actionInbox": {
+    "description": "Global top bar action label for Inbox."
+  },
+  "actionProfile": "Profile",
+  "@actionProfile": {
+    "description": "Global top bar action label for Profile."
+  },
+  "actionReview": "Review",
+  "@actionReview": {
+    "description": "Action label to open Sync & Recovery."
+  },
+  "actionBack": "Back",
+  "@actionBack": {
+    "description": "Action label to navigate back to the previous context."
+  },
+  "actionRetry": "Review & retry",
+  "@actionRetry": {
+    "description": "Action label for failed item recovery entry."
+  },
+  "actionDismiss": "Dismiss",
+  "@actionDismiss": {
+    "description": "Action label to dismiss transient feedback."
+  },
+  "actionAccountRecovery": "Account attention",
+  "@actionAccountRecovery": {
+    "description": "Action label directing the user to account/session recovery."
+  },
+  "screenInboxTitle": "Inbox",
+  "@screenInboxTitle": {
+    "description": "Title of the global Inbox destination."
+  },
+  "screenInboxPlaceholderBody": "Product notifications and social events will be provided by their owning slice.",
+  "@screenInboxPlaceholderBody": {
+    "description": "SL-01 host explanation for the Inbox destination."
+  },
+  "screenProfileTitle": "Profile",
+  "@screenProfileTitle": {
+    "description": "Title of the global Profile destination."
+  },
+  "screenProfilePlaceholderBody": "Account settings and language preference persistence belong to later slices.",
+  "@screenProfilePlaceholderBody": {
+    "description": "SL-01 host explanation for the Profile destination."
+  },
+  "screenSyncRecoveryTitle": "Sync & Recovery",
+  "@screenSyncRecoveryTitle": {
+    "description": "Title of the contextual Sync & Recovery destination."
+  },
+  "screenSyncRecoveryPlaceholderBody": "Pending work and failed sync actions requiring review are inspected here.",
+  "@screenSyncRecoveryPlaceholderBody": {
+    "description": "SL-01 host explanation for Sync & Recovery."
+  },
+  "hostPlaceholderTitle": "{destination} Area",
+  "@hostPlaceholderTitle": {
+    "description": "Labeled SL-01 shell host title.",
+    "placeholders": {
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
+  "hostPlaceholderSubtitle": "Shell host ready for {sliceCode} destination content.",
+  "@hostPlaceholderSubtitle": {
+    "description": "Labeled SL-01 shell host subtitle.",
+    "placeholders": {
+      "sliceCode": {
+        "type": "String"
+      }
+    }
+  },
+  "networkOnlineTitle": "Online",
+  "@networkOnlineTitle": {
+    "description": "Title for confirmed backend reachability."
+  },
+  "networkOnlineDescription": "Connected and ready to sync.",
+  "@networkOnlineDescription": {
+    "description": "Accessible explanation for Online state."
+  },
+  "networkOfflineTitle": "You're offline",
+  "@networkOfflineTitle": {
+    "description": "Title for Offline connection banner."
+  },
+  "networkOfflineDescription": "Your changes are saved on this device and will sync when you're back online.",
+  "@networkOfflineDescription": {
+    "description": "Explanation for Offline connection banner."
+  },
+  "networkReconnectingTitle": "Reconnecting",
+  "@networkReconnectingTitle": {
+    "description": "Title when restoring backend reachability."
+  },
+  "networkReconnectingDescription": "Restoring connection to the server. Pending changes remain saved on this device.",
+  "@networkReconnectingDescription": {
+    "description": "Explanation when restoring backend reachability."
+  },
+  "networkSyncingTitle": "Syncing",
+  "@networkSyncingTitle": {
+    "description": "Title when synchronization is in progress."
+  },
+  "networkSyncingDescription": "Synchronizing your saved changes with the server.",
+  "@networkSyncingDescription": {
+    "description": "Explanation when synchronization is in progress."
+  },
+  "networkSyncFailedTitle": "Sync issue",
+  "@networkSyncFailedTitle": {
+    "description": "Title for the Sync Failed issue banner."
+  },
+  "networkSyncFailedDescription": "{count, plural, =1{1 change couldn't sync. Your data is safe on this device.} other{{count} changes couldn't sync. Your data is safe on this device.}}",
+  "@networkSyncFailedDescription": {
+    "description": "Explanation for Sync Failed issue banner with count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "networkSyncFailedCompactTitle": "{count, plural, =1{1 change couldn't sync} other{{count} changes couldn't sync}}",
+  "@networkSyncFailedCompactTitle": {
+    "description": "Compact title for Sync Failed banner.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "networkSyncFailedCompactDescription": "Review the affected activity to resolve this sync issue.",
+  "@networkSyncFailedCompactDescription": {
+    "description": "State-accurate compact subtitle for Sync Failed that does not promise automatic acceptance."
+  },
+  "networkPendingQueueBannerTitle": "{count, plural, =1{1 change waiting to sync} other{{count} changes waiting to sync}}",
+  "@networkPendingQueueBannerTitle": {
+    "description": "Title when pending work warrants attention.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "networkPendingQueueBannerDescription": "Saved on this device and waiting for remote confirmation.",
+  "@networkPendingQueueBannerDescription": {
+    "description": "Subtitle when pending work awaits confirmation."
+  },
+  "networkAuthRequiredTitle": "Account attention required",
+  "@networkAuthRequiredTitle": {
+    "description": "Title when an authentication or session problem blocks sync."
+  },
+  "networkAuthRequiredDescription": "Your session needs attention before changes can sync. Local data remains safe on this device.",
+  "@networkAuthRequiredDescription": {
+    "description": "Explanation distinguishing auth/session failure from transport offline."
+  },
+  "actionStatusPending": "Pending sync",
+  "@actionStatusPending": {
+    "description": "Label for an action saved locally and waiting for remote acknowledgment."
+  },
+  "actionStatusSavedOffline": "Saved offline",
+  "@actionStatusSavedOffline": {
+    "description": "Label for an action saved locally while offline."
+  },
+  "actionStatusSynced": "Synced",
+  "@actionStatusSynced": {
+    "description": "Label for an action acknowledged remotely and reconciled."
+  },
+  "actionStatusFailed": "Sync failed",
+  "@actionStatusFailed": {
+    "description": "Label for an action whose synchronization failed and needs attention."
+  },
+  "actionLocalCompletedLabel": "Completed locally",
+  "@actionLocalCompletedLabel": {
+    "description": "Label indicating local completion separate from remote sync."
+  },
+  "actionSemanticsCombined": "{actionLabel}: {localStatus}, {syncStatus}",
+  "@actionSemanticsCombined": {
+    "description": "Combined accessible announcement for an action's local and remote status.",
+    "placeholders": {
+      "actionLabel": {
+        "type": "String"
+      },
+      "localStatus": {
+        "type": "String"
+      },
+      "syncStatus": {
+        "type": "String"
+      }
+    }
+  },
+  "feedbackKindSuccess": "Success",
+  "@feedbackKindSuccess": {
+    "description": "Accessible prefix for success feedback."
+  },
+  "feedbackKindInfo": "Information",
+  "@feedbackKindInfo": {
+    "description": "Accessible prefix for informational feedback."
+  },
+  "feedbackKindWarning": "Warning",
+  "@feedbackKindWarning": {
+    "description": "Accessible prefix for warning feedback."
+  },
+  "feedbackKindError": "Error",
+  "@feedbackKindError": {
+    "description": "Accessible prefix for recoverable error feedback."
+  },
+  "feedbackKindOffline": "Offline status",
+  "@feedbackKindOffline": {
+    "description": "Accessible prefix for offline feedback."
+  },
+  "feedbackKindSync": "Sync status",
+  "@feedbackKindSync": {
+    "description": "Accessible prefix for sync feedback."
+  },
+  "feedbackKindActionRequired": "Action required",
+  "@feedbackKindActionRequired": {
+    "description": "Accessible prefix for action-required feedback."
+  },
+  "feedbackLocalSavePending": "Saved on this device. Waiting for server confirmation.",
+  "@feedbackLocalSavePending": {
+    "description": "Message confirming local save while remote sync is still pending."
+  },
+  "feedbackBackgroundSyncCoalesced": "{count, plural, =1{1 background sync update in progress} other{{count} background sync updates in progress}}",
+  "@feedbackBackgroundSyncCoalesced": {
+    "description": "Coalesced summary message for repeated background sync events.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "stateLoadingTitle": "Loading",
+  "@stateLoadingTitle": {
+    "description": "Title for shared loading state."
+  },
+  "stateLoadingDescription": "Preparing your content. Please wait...",
+  "@stateLoadingDescription": {
+    "description": "Description for shared loading state, distinct from empty state."
+  },
+  "stateEmptyTitle": "Nothing to show yet",
+  "@stateEmptyTitle": {
+    "description": "Title for a truly empty state."
+  },
+  "stateEmptyDescription": "There are no items in this view right now.",
+  "@stateEmptyDescription": {
+    "description": "Default explanation for a truly empty state."
+  },
+  "stateErrorTitle": "Unable to load content",
+  "@stateErrorTitle": {
+    "description": "Title for shared inline error state."
+  },
+  "stateErrorDescription": "We couldn't load this section. Your saved local data is unaffected.",
+  "@stateErrorDescription": {
+    "description": "Default explanation for shared inline error state."
+  },
+  "authRestoringTitle": "Getting things ready",
+  "authRestoringSubtitle": "Restoring your session securely...",
+  "authSignInTitle": "Welcome back",
+  "authSignInSubtitle": "Sign in to continue your streaks.",
+  "authEmailLabel": "Email",
+  "authEmailHint": "name@example.com",
+  "authPasswordLabel": "Password",
+  "authPasswordHint": "Enter your password",
+  "authConfirmPasswordLabel": "Confirm Password",
+  "authConfirmPasswordHint": "Confirm your password",
+  "authShowPasswordTooltip": "Show password",
+  "authHidePasswordTooltip": "Hide password",
+  "authSignInButton": "Sign In",
+  "authForgotPasswordButton": "Forgot password?",
+  "authOrDivider": "or",
+  "authNewToStreakUpPrompt": "New to StreakUp?",
+  "authCreateAccountLink": "Create account",
+  "authRegisterTitle": "Create your account",
+  "authRegisterSubtitle": "Start building better habits, one streak at a time.",
+  "authCreateAccountButton": "Create Account",
+  "authAlreadyHaveAccountPrompt": "Already have an account?",
+  "authSignInLink": "Sign In",
+  "authVerifyEmailTitle": "Verify your email",
+  "authVerifyEmailSentTo": "We sent a verification link to",
+  "authVerifyEmailBody": "Verify your email before continuing to StreakUp.",
+  "authVerifyEmailPrimaryButton": "I've Verified My Email",
+  "authResendEmailButton": "Resend Email",
+  "authBackToSignInButton": "Back to Sign In",
+  "authVerificationResentBanner": "Verification link sent. Please check your inbox.",
+  "authPasswordRecoveryTitle": "Reset your password",
+  "authPasswordRecoverySubtitle": "Enter your email and we'll send you a link to reset your password.",
+  "authSendResetLinkButton": "Send Reset Link",
+  "authPasswordRecoverySentTitle": "Check your email",
+  "authPasswordRecoverySentGenericBody": "If an account exists for that email, we've sent a password reset link.",
+  "authPasswordRecoverySentFollowUp": "Follow the instructions in the email to reset your password.",
+  "authSendAgainButton": "Send Again",
+  "authRecoveryResentBanner": "If an account exists for that email, another reset link has been sent.",
+  "authPasswordResetFormTitle": "Create a new password",
+  "authPasswordResetFormSubtitle": "Enter and confirm your new password to secure your account.",
+  "authNewPasswordLabel": "New Password",
+  "authSaveNewPasswordButton": "Update Password",
+  "authSessionExpiredTitle": "Session expired",
+  "authSessionExpiredSubtitle": "For your security, please sign in again to continue.",
+  "authSignInAgainButton": "Sign In Again",
+  "authSessionDataProtectedNote": "Your account data remains protected.",
+  "authSignOutWarningTitle": "Sign out with pending changes?",
+  "authSignOutWarningLead": "Some changes haven't synced yet.",
+  "authSignOutWarningBody": "They'll stay safely on this device and resume when you sign in to this account again.",
+  "authStaySignedInButton": "Stay Signed In",
+  "authSignOutAnywayButton": "Sign Out Anyway",
+  "authSwitchAccountWarningTitle": "Switch accounts?",
+  "authSwitchAccountWarningLead": "You still have changes waiting to sync.",
+  "authSwitchAccountWarningBody": "They'll stay with this account on this device and won't be available while you're using another account.",
+  "authStayOnThisAccountButton": "Stay on This Account",
+  "authSwitchAnywayButton": "Switch Anyway",
+  "authSignOutAction": "Sign Out",
+  "authSwitchAccountAction": "Switch Account",
+  "authErrorInvalidCredentials": "Invalid email or password. Please check your details and try again.",
+  "authErrorEmailAlreadyInUse": "Unable to create account with this email. Try signing in or resetting your password.",
+  "authErrorWeakPassword": "Password must be at least 8 characters long.",
+  "authErrorPasswordMismatch": "Passwords do not match.",
+  "authErrorInvalidEmail": "Enter a valid email address.",
+  "authErrorVerificationStillPending": "Your email hasn't been verified yet. Open the link in your inbox or request a new email.",
+  "authErrorVerificationLinkExpired": "This verification link is invalid or expired. Request a new verification email.",
+  "authErrorRecoveryLinkExpired": "This password reset link is invalid or expired. Request a new reset link.",
+  "authErrorRateLimited": "Too many requests. Please wait a moment before trying again.",
+  "authErrorNetworkOrBackend": "Unable to reach the server. Check your connection and try again.",
+  "authErrorUnexpected": "Something went wrong. Please try again."
+}
