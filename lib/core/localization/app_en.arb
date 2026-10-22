@@ -1,5 +1,16 @@
 {
   "@@locale": "en",
+  "todayHeading": "Let’s build your streaks",
+  "todayHabits": "Today’s habits",
+  "todayYesterday": "Yesterday",
+  "todayNoHabits": "No habits yet",
+  "todayNoHabitsHint": "Create your first habit and start building your routine.",
+  "todayNothingDue": "Nothing due today",
+  "todayNothingDueHint": "Your habits are saved. None are scheduled for this local day.",
+  "todayUnchecked": "Not completed",
+  "todayMissed": "Missed",
+  "todayMinutes": "{minutes} minutes",
+  "@todayMinutes": {"placeholders": {"minutes": {"type": "int"}}},
   "brandName": "StreakUp",
   "@brandName": {
     "description": "The primary product brand name."
@@ -103,14 +114,9 @@
       }
     }
   },
-  "hostPlaceholderSubtitle": "Shell host ready for {sliceCode} destination content.",
+  "hostPlaceholderSubtitle": "This area is ready for future content.",
   "@hostPlaceholderSubtitle": {
-    "description": "Labeled SL-01 shell host subtitle.",
-    "placeholders": {
-      "sliceCode": {
-        "type": "String"
-      }
-    }
+    "description": "Description for an unimplemented destination."
   },
   "networkOnlineTitle": "Online",
   "@networkOnlineTitle": {
@@ -135,61 +141,6 @@
   "networkReconnectingDescription": "Restoring connection to the server. Pending changes remain saved on this device.",
   "@networkReconnectingDescription": {
     "description": "Explanation when restoring backend reachability."
-  },
-  "networkSyncingTitle": "Syncing",
-  "@networkSyncingTitle": {
-    "description": "Title when synchronization is in progress."
-  },
-  "networkSyncingDescription": "Synchronizing your saved changes with the server.",
-  "@networkSyncingDescription": {
-    "description": "Explanation when synchronization is in progress."
-  },
-  "networkSyncFailedTitle": "Sync issue",
-  "@networkSyncFailedTitle": {
-    "description": "Title for the Sync Failed issue banner."
-  },
-  "networkSyncFailedDescription": "{count, plural, =1{1 change couldn't sync. Your data is safe on this device.} other{{count} changes couldn't sync. Your data is safe on this device.}}",
-  "@networkSyncFailedDescription": {
-    "description": "Explanation for Sync Failed issue banner with count.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "networkSyncFailedCompactTitle": "{count, plural, =1{1 change couldn't sync} other{{count} changes couldn't sync}}",
-  "@networkSyncFailedCompactTitle": {
-    "description": "Compact title for Sync Failed banner.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "networkSyncFailedCompactDescription": "Review the affected activity to resolve this sync issue.",
-  "@networkSyncFailedCompactDescription": {
-    "description": "State-accurate compact subtitle for Sync Failed that does not promise automatic acceptance."
-  },
-  "networkPendingQueueBannerTitle": "{count, plural, =1{1 change waiting to sync} other{{count} changes waiting to sync}}",
-  "@networkPendingQueueBannerTitle": {
-    "description": "Title when pending work warrants attention.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "networkPendingQueueBannerDescription": "Saved on this device and waiting for remote confirmation.",
-  "@networkPendingQueueBannerDescription": {
-    "description": "Subtitle when pending work awaits confirmation."
-  },
-  "networkAuthRequiredTitle": "Account attention required",
-  "@networkAuthRequiredTitle": {
-    "description": "Title when an authentication or session problem blocks sync."
-  },
-  "networkAuthRequiredDescription": "Your session needs attention before changes can sync. Local data remains safe on this device.",
-  "@networkAuthRequiredDescription": {
-    "description": "Explanation distinguishing auth/session failure from transport offline."
   },
   "actionStatusPending": "Pending sync",
   "@actionStatusPending": {
@@ -242,31 +193,6 @@
   "@feedbackKindError": {
     "description": "Accessible prefix for recoverable error feedback."
   },
-  "feedbackKindOffline": "Offline status",
-  "@feedbackKindOffline": {
-    "description": "Accessible prefix for offline feedback."
-  },
-  "feedbackKindSync": "Sync status",
-  "@feedbackKindSync": {
-    "description": "Accessible prefix for sync feedback."
-  },
-  "feedbackKindActionRequired": "Action required",
-  "@feedbackKindActionRequired": {
-    "description": "Accessible prefix for action-required feedback."
-  },
-  "feedbackLocalSavePending": "Saved on this device. Waiting for server confirmation.",
-  "@feedbackLocalSavePending": {
-    "description": "Message confirming local save while remote sync is still pending."
-  },
-  "feedbackBackgroundSyncCoalesced": "{count, plural, =1{1 background sync update in progress} other{{count} background sync updates in progress}}",
-  "@feedbackBackgroundSyncCoalesced": {
-    "description": "Coalesced summary message for repeated background sync events.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "stateLoadingTitle": "Loading",
   "@stateLoadingTitle": {
     "description": "Title for shared loading state."
@@ -296,11 +222,8 @@
   "authSignInTitle": "Welcome back",
   "authSignInSubtitle": "Sign in to continue your streaks.",
   "authEmailLabel": "Email",
-  "authEmailHint": "name@example.com",
   "authPasswordLabel": "Password",
-  "authPasswordHint": "Enter your password",
   "authConfirmPasswordLabel": "Confirm Password",
-  "authConfirmPasswordHint": "Confirm your password",
   "authShowPasswordTooltip": "Show password",
   "authHidePasswordTooltip": "Hide password",
   "authSignInButton": "Sign In",
@@ -341,22 +264,58 @@
   "authSignOutWarningBody": "They'll stay safely on this device and resume when you sign in to this account again.",
   "authStaySignedInButton": "Stay Signed In",
   "authSignOutAnywayButton": "Sign Out Anyway",
-  "authSwitchAccountWarningTitle": "Switch accounts?",
-  "authSwitchAccountWarningLead": "You still have changes waiting to sync.",
-  "authSwitchAccountWarningBody": "They'll stay with this account on this device and won't be available while you're using another account.",
-  "authStayOnThisAccountButton": "Stay on This Account",
-  "authSwitchAnywayButton": "Switch Anyway",
   "authSignOutAction": "Sign Out",
-  "authSwitchAccountAction": "Switch Account",
   "authErrorInvalidCredentials": "Invalid email or password. Please check your details and try again.",
   "authErrorEmailAlreadyInUse": "Unable to create account with this email. Try signing in or resetting your password.",
   "authErrorWeakPassword": "Password must be at least 8 characters long.",
   "authErrorPasswordMismatch": "Passwords do not match.",
   "authErrorInvalidEmail": "Enter a valid email address.",
   "authErrorVerificationStillPending": "Your email hasn't been verified yet. Open the link in your inbox or request a new email.",
-  "authErrorVerificationLinkExpired": "This verification link is invalid or expired. Request a new verification email.",
-  "authErrorRecoveryLinkExpired": "This password reset link is invalid or expired. Request a new reset link.",
   "authErrorRateLimited": "Too many requests. Please wait a moment before trying again.",
   "authErrorNetworkOrBackend": "Unable to reach the server. Check your connection and try again.",
-  "authErrorUnexpected": "Something went wrong. Please try again."
+  "authErrorUnexpected": "Something went wrong. Please try again.",
+  "habitCreateTitle": "Create Habit",
+  "habitNew": "New Habit",
+  "habitListSubtitle": "Manage your habits and keep building a better you.",
+  "habitActive": "Active Habits",
+  "habitDetails": "Habit Details",
+  "habitName": "Habit name",
+  "habitDescription": "Description (optional)",
+  "habitCategory": "Icon & Category",
+  "habitSchedule": "Schedule",
+  "habitDaily": "Every Day",
+  "habitSelectedDays": "Selected Days",
+  "habitTarget": "Target in minutes (optional)",
+  "habitPrivate": "Private",
+  "habitPrivateDescription": "Only you can see this habit.",
+  "habitPending": "Pending sync",
+  "habitEmpty": "No habits yet. Create your first habit.",
+  "habitInvalidName": "Enter a habit name.",
+  "habitInvalidSchedule": "Choose at least one day and a valid timezone.",
+  "habitInvalidTarget": "Enter a positive whole number of minutes.",
+  "habitStorageError": "Unable to save or open your habits. Your entered details are kept.",
+  "habitAccountUnavailable": "Sign in to your account to create a habit.",
+  "habitTimezoneError": "Unable to read your timezone. Try again.",
+  "habitExercise": "Exercise",
+  "habitWater": "Water",
+  "habitReading": "Reading",
+  "habitMindfulness": "Mindfulness",
+  "habitSleep": "Sleep",
+  "habitFailed": "Failed",
+  "habitRejectedEntity": "A habit with this identifier already exists.",
+  "habitSynced": "Synced",
+  "habitRejectedPayload": "The server could not accept these habit details.",
+  "habitRejectedCommand": "This creation command conflicts with an earlier request.",
+  "habitDeliveryPending": "Delivery could not finish. Your local habit is kept; retry when signed in and online.",
+  "todayCompleted": "Completed",
+  "todaySaving": "Saving completion",
+  "todayCompleteHabit": "Complete {name}",
+  "@todayCompleteHabit": {"placeholders": {"name": {"type": "String"}}},
+  "todayProgress": "{completed} of {total} completed",
+  "@todayProgress": {"placeholders": {"completed": {"type": "int"}, "total": {"type": "int"}}},
+  "todayAllComplete": "All habits due today are completed.",
+  "todayEarlierCheckIns": "Earlier check-ins — pending sync",
+  "todayCheckInStorageError": "Completion was not saved. Tap the completion control to try again.",
+  "todayCheckInAccountUnavailable": "Your account is unavailable. Sign in again to complete this habit.",
+  "todayOccurrenceUnavailable": "This occurrence is no longer available. Today has been refreshed."
 }

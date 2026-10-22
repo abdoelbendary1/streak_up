@@ -98,6 +98,66 @@ abstract class AppLocalizations {
     Locale('en'),
   ];
 
+  /// No description provided for @todayHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Let’s build your streaks'**
+  String get todayHeading;
+
+  /// No description provided for @todayHabits.
+  ///
+  /// In en, this message translates to:
+  /// **'Today’s habits'**
+  String get todayHabits;
+
+  /// No description provided for @todayYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get todayYesterday;
+
+  /// No description provided for @todayNoHabits.
+  ///
+  /// In en, this message translates to:
+  /// **'No habits yet'**
+  String get todayNoHabits;
+
+  /// No description provided for @todayNoHabitsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your first habit and start building your routine.'**
+  String get todayNoHabitsHint;
+
+  /// No description provided for @todayNothingDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing due today'**
+  String get todayNothingDue;
+
+  /// No description provided for @todayNothingDueHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your habits are saved. None are scheduled for this local day.'**
+  String get todayNothingDueHint;
+
+  /// No description provided for @todayUnchecked.
+  ///
+  /// In en, this message translates to:
+  /// **'Not completed'**
+  String get todayUnchecked;
+
+  /// No description provided for @todayMissed.
+  ///
+  /// In en, this message translates to:
+  /// **'Missed'**
+  String get todayMissed;
+
+  /// No description provided for @todayMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} minutes'**
+  String todayMinutes(int minutes);
+
   /// The primary product brand name.
   ///
   /// In en, this message translates to:
@@ -230,11 +290,11 @@ abstract class AppLocalizations {
   /// **'{destination} Area'**
   String hostPlaceholderTitle(String destination);
 
-  /// Labeled SL-01 shell host subtitle.
+  /// Description for an unimplemented destination.
   ///
   /// In en, this message translates to:
-  /// **'Shell host ready for {sliceCode} destination content.'**
-  String hostPlaceholderSubtitle(String sliceCode);
+  /// **'This area is ready for future content.'**
+  String get hostPlaceholderSubtitle;
 
   /// Title for confirmed backend reachability.
   ///
@@ -271,66 +331,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Restoring connection to the server. Pending changes remain saved on this device.'**
   String get networkReconnectingDescription;
-
-  /// Title when synchronization is in progress.
-  ///
-  /// In en, this message translates to:
-  /// **'Syncing'**
-  String get networkSyncingTitle;
-
-  /// Explanation when synchronization is in progress.
-  ///
-  /// In en, this message translates to:
-  /// **'Synchronizing your saved changes with the server.'**
-  String get networkSyncingDescription;
-
-  /// Title for the Sync Failed issue banner.
-  ///
-  /// In en, this message translates to:
-  /// **'Sync issue'**
-  String get networkSyncFailedTitle;
-
-  /// Explanation for Sync Failed issue banner with count.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 change couldn\'t sync. Your data is safe on this device.} other{{count} changes couldn\'t sync. Your data is safe on this device.}}'**
-  String networkSyncFailedDescription(int count);
-
-  /// Compact title for Sync Failed banner.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 change couldn\'t sync} other{{count} changes couldn\'t sync}}'**
-  String networkSyncFailedCompactTitle(int count);
-
-  /// State-accurate compact subtitle for Sync Failed that does not promise automatic acceptance.
-  ///
-  /// In en, this message translates to:
-  /// **'Review the affected activity to resolve this sync issue.'**
-  String get networkSyncFailedCompactDescription;
-
-  /// Title when pending work warrants attention.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 change waiting to sync} other{{count} changes waiting to sync}}'**
-  String networkPendingQueueBannerTitle(int count);
-
-  /// Subtitle when pending work awaits confirmation.
-  ///
-  /// In en, this message translates to:
-  /// **'Saved on this device and waiting for remote confirmation.'**
-  String get networkPendingQueueBannerDescription;
-
-  /// Title when an authentication or session problem blocks sync.
-  ///
-  /// In en, this message translates to:
-  /// **'Account attention required'**
-  String get networkAuthRequiredTitle;
-
-  /// Explanation distinguishing auth/session failure from transport offline.
-  ///
-  /// In en, this message translates to:
-  /// **'Your session needs attention before changes can sync. Local data remains safe on this device.'**
-  String get networkAuthRequiredDescription;
 
   /// Label for an action saved locally and waiting for remote acknowledgment.
   ///
@@ -395,36 +395,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error'**
   String get feedbackKindError;
-
-  /// Accessible prefix for offline feedback.
-  ///
-  /// In en, this message translates to:
-  /// **'Offline status'**
-  String get feedbackKindOffline;
-
-  /// Accessible prefix for sync feedback.
-  ///
-  /// In en, this message translates to:
-  /// **'Sync status'**
-  String get feedbackKindSync;
-
-  /// Accessible prefix for action-required feedback.
-  ///
-  /// In en, this message translates to:
-  /// **'Action required'**
-  String get feedbackKindActionRequired;
-
-  /// Message confirming local save while remote sync is still pending.
-  ///
-  /// In en, this message translates to:
-  /// **'Saved on this device. Waiting for server confirmation.'**
-  String get feedbackLocalSavePending;
-
-  /// Coalesced summary message for repeated background sync events.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 background sync update in progress} other{{count} background sync updates in progress}}'**
-  String feedbackBackgroundSyncCoalesced(int count);
 
   /// Title for shared loading state.
   ///
@@ -492,35 +462,17 @@ abstract class AppLocalizations {
   /// **'Email'**
   String get authEmailLabel;
 
-  /// No description provided for @authEmailHint.
-  ///
-  /// In en, this message translates to:
-  /// **'name@example.com'**
-  String get authEmailHint;
-
   /// No description provided for @authPasswordLabel.
   ///
   /// In en, this message translates to:
   /// **'Password'**
   String get authPasswordLabel;
 
-  /// No description provided for @authPasswordHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter your password'**
-  String get authPasswordHint;
-
   /// No description provided for @authConfirmPasswordLabel.
   ///
   /// In en, this message translates to:
   /// **'Confirm Password'**
   String get authConfirmPasswordLabel;
-
-  /// No description provided for @authConfirmPasswordHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm your password'**
-  String get authConfirmPasswordHint;
 
   /// No description provided for @authShowPasswordTooltip.
   ///
@@ -762,47 +714,11 @@ abstract class AppLocalizations {
   /// **'Sign Out Anyway'**
   String get authSignOutAnywayButton;
 
-  /// No description provided for @authSwitchAccountWarningTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Switch accounts?'**
-  String get authSwitchAccountWarningTitle;
-
-  /// No description provided for @authSwitchAccountWarningLead.
-  ///
-  /// In en, this message translates to:
-  /// **'You still have changes waiting to sync.'**
-  String get authSwitchAccountWarningLead;
-
-  /// No description provided for @authSwitchAccountWarningBody.
-  ///
-  /// In en, this message translates to:
-  /// **'They\'ll stay with this account on this device and won\'t be available while you\'re using another account.'**
-  String get authSwitchAccountWarningBody;
-
-  /// No description provided for @authStayOnThisAccountButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Stay on This Account'**
-  String get authStayOnThisAccountButton;
-
-  /// No description provided for @authSwitchAnywayButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Switch Anyway'**
-  String get authSwitchAnywayButton;
-
   /// No description provided for @authSignOutAction.
   ///
   /// In en, this message translates to:
   /// **'Sign Out'**
   String get authSignOutAction;
-
-  /// No description provided for @authSwitchAccountAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Switch Account'**
-  String get authSwitchAccountAction;
 
   /// No description provided for @authErrorInvalidCredentials.
   ///
@@ -840,18 +756,6 @@ abstract class AppLocalizations {
   /// **'Your email hasn\'t been verified yet. Open the link in your inbox or request a new email.'**
   String get authErrorVerificationStillPending;
 
-  /// No description provided for @authErrorVerificationLinkExpired.
-  ///
-  /// In en, this message translates to:
-  /// **'This verification link is invalid or expired. Request a new verification email.'**
-  String get authErrorVerificationLinkExpired;
-
-  /// No description provided for @authErrorRecoveryLinkExpired.
-  ///
-  /// In en, this message translates to:
-  /// **'This password reset link is invalid or expired. Request a new reset link.'**
-  String get authErrorRecoveryLinkExpired;
-
   /// No description provided for @authErrorRateLimited.
   ///
   /// In en, this message translates to:
@@ -869,6 +773,258 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Something went wrong. Please try again.'**
   String get authErrorUnexpected;
+
+  /// No description provided for @habitCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Habit'**
+  String get habitCreateTitle;
+
+  /// No description provided for @habitNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New Habit'**
+  String get habitNew;
+
+  /// No description provided for @habitListSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your habits and keep building a better you.'**
+  String get habitListSubtitle;
+
+  /// No description provided for @habitActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Habits'**
+  String get habitActive;
+
+  /// No description provided for @habitDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Habit Details'**
+  String get habitDetails;
+
+  /// No description provided for @habitName.
+  ///
+  /// In en, this message translates to:
+  /// **'Habit name'**
+  String get habitName;
+
+  /// No description provided for @habitDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (optional)'**
+  String get habitDescription;
+
+  /// No description provided for @habitCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon & Category'**
+  String get habitCategory;
+
+  /// No description provided for @habitSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule'**
+  String get habitSchedule;
+
+  /// No description provided for @habitDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Every Day'**
+  String get habitDaily;
+
+  /// No description provided for @habitSelectedDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected Days'**
+  String get habitSelectedDays;
+
+  /// No description provided for @habitTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Target in minutes (optional)'**
+  String get habitTarget;
+
+  /// No description provided for @habitPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Private'**
+  String get habitPrivate;
+
+  /// No description provided for @habitPrivateDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Only you can see this habit.'**
+  String get habitPrivateDescription;
+
+  /// No description provided for @habitPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending sync'**
+  String get habitPending;
+
+  /// No description provided for @habitEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No habits yet. Create your first habit.'**
+  String get habitEmpty;
+
+  /// No description provided for @habitInvalidName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a habit name.'**
+  String get habitInvalidName;
+
+  /// No description provided for @habitInvalidSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose at least one day and a valid timezone.'**
+  String get habitInvalidSchedule;
+
+  /// No description provided for @habitInvalidTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a positive whole number of minutes.'**
+  String get habitInvalidTarget;
+
+  /// No description provided for @habitStorageError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to save or open your habits. Your entered details are kept.'**
+  String get habitStorageError;
+
+  /// No description provided for @habitAccountUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to your account to create a habit.'**
+  String get habitAccountUnavailable;
+
+  /// No description provided for @habitTimezoneError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to read your timezone. Try again.'**
+  String get habitTimezoneError;
+
+  /// No description provided for @habitExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise'**
+  String get habitExercise;
+
+  /// No description provided for @habitWater.
+  ///
+  /// In en, this message translates to:
+  /// **'Water'**
+  String get habitWater;
+
+  /// No description provided for @habitReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading'**
+  String get habitReading;
+
+  /// No description provided for @habitMindfulness.
+  ///
+  /// In en, this message translates to:
+  /// **'Mindfulness'**
+  String get habitMindfulness;
+
+  /// No description provided for @habitSleep.
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep'**
+  String get habitSleep;
+
+  /// No description provided for @habitFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get habitFailed;
+
+  /// No description provided for @habitRejectedEntity.
+  ///
+  /// In en, this message translates to:
+  /// **'A habit with this identifier already exists.'**
+  String get habitRejectedEntity;
+
+  /// No description provided for @habitSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'Synced'**
+  String get habitSynced;
+
+  /// No description provided for @habitRejectedPayload.
+  ///
+  /// In en, this message translates to:
+  /// **'The server could not accept these habit details.'**
+  String get habitRejectedPayload;
+
+  /// No description provided for @habitRejectedCommand.
+  ///
+  /// In en, this message translates to:
+  /// **'This creation command conflicts with an earlier request.'**
+  String get habitRejectedCommand;
+
+  /// No description provided for @habitDeliveryPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery could not finish. Your local habit is kept; retry when signed in and online.'**
+  String get habitDeliveryPending;
+
+  /// No description provided for @todayCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get todayCompleted;
+
+  /// No description provided for @todaySaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving completion'**
+  String get todaySaving;
+
+  /// No description provided for @todayCompleteHabit.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete {name}'**
+  String todayCompleteHabit(String name);
+
+  /// No description provided for @todayProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{completed} of {total} completed'**
+  String todayProgress(int completed, int total);
+
+  /// No description provided for @todayAllComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'All habits due today are completed.'**
+  String get todayAllComplete;
+
+  /// No description provided for @todayEarlierCheckIns.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier check-ins — pending sync'**
+  String get todayEarlierCheckIns;
+
+  /// No description provided for @todayCheckInStorageError.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion was not saved. Tap the completion control to try again.'**
+  String get todayCheckInStorageError;
+
+  /// No description provided for @todayCheckInAccountUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is unavailable. Sign in again to complete this habit.'**
+  String get todayCheckInAccountUnavailable;
+
+  /// No description provided for @todayOccurrenceUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This occurrence is no longer available. Today has been refreshed.'**
+  String get todayOccurrenceUnavailable;
 }
 
 class _AppLocalizationsDelegate

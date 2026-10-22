@@ -9,7 +9,7 @@
 | Engineering boundaries | [ARCHITECTURE.md](ARCHITECTURE.md) and [DATABASE.md](DATABASE.md) |
 | Governance | [StreakUp Constitution](../.specify/memory/constitution.md) v1.0.0 |
 
-This document defines the approved visual and interaction foundation for Android and iOS. It is not a set of final screen designs or permission to implement Flutter UI. Feature specifications must still clarify open product rules and follow the approved design workflow: Feature Specification → Clarification → PNG UI Design → Design Approval → Technical Plan → Tasks → Implementation → Visual Verification. P0 flows, English/Arabic, RTL, privacy, and offline recovery are the design baseline (`CON-001`–`CON-004`, `NFR-002`–`NFR-012`). Stable design rules are recorded in [DESIGN_SYSTEM.md](design/DESIGN_SYSTEM.md); approved reusable PNG references and feature screen PNGs live under `docs/design/references/` and `docs/design/screens/<feature-id>/` respectively.
+This document defines the approved visual and interaction foundation for Android and iOS. It is not a set of final screen designs or permission to implement Flutter UI. Feature specifications must still clarify open product rules and follow the approved design workflow: Understand + Specify → Design Reference (if UI exists) → Plan → Implement + Test → Finalize. P0 flows, English/Arabic, RTL, privacy, and offline recovery are the design baseline (`CON-001`–`CON-004`, `NFR-002`–`NFR-012`). Stable design rules are recorded in [DESIGN_SYSTEM.md](design/DESIGN_SYSTEM.md); approved reusable PNG references and feature screen PNGs live under `docs/design/references/` and `docs/design/screens/<feature-id>/` respectively.
 
 ## 1. Product design direction
 
@@ -140,7 +140,7 @@ Sync status belongs near the affected action and in a consolidated recovery dest
 
 ## 10. PNG design gates before implementation
 
-For every feature containing user-facing UI, follow Feature Specification → Clarification → PNG UI Design → Design Approval → Technical Plan → Tasks → Implementation → Visual Verification. A required screen MUST NOT be implemented until its PNG design has been explicitly approved by the Product Owner. Plans and tasks MUST cite the exact approved PNG file paths. Store approved reusable visual reference PNGs in `docs/design/references/` and feature-specific screen PNGs in `docs/design/screens/<feature-id>/`. Use those PNGs together with [DESIGN_SYSTEM.md](design/DESIGN_SYSTEM.md).
+For every feature containing user-facing UI, follow Understand + Specify → Design Reference (if UI exists) → Plan → Implement + Test → Finalize. A required screen MUST NOT be implemented until its PNG design has been explicitly approved by the Product Owner. Plans MUST cite the exact approved PNG file paths. Store approved reusable visual reference PNGs in `docs/design/references/` and feature-specific screen PNGs in `docs/design/screens/<feature-id>/`. Use those PNGs together with [DESIGN_SYSTEM.md](design/DESIGN_SYSTEM.md).
 
 | Gate | Required PNG design scope | Reason |
 | --- | --- | --- |
@@ -149,7 +149,7 @@ For every feature containing user-facing UI, follow Feature Specification → Cl
 | Social/challenge feature gate | Challenges list/invitations; Create Challenge; Challenge detail/leaderboard including ties, pending check-in, left/removed; Friends/requests/permitted progress; Inbox. | Tests score-versus-streak distinction and authorization-sensitive views. Exact screen scope awaits `OQ-003`–`OQ-006`. |
 | Account/profile feature gate | Sign in/register/password recovery; Profile/settings; account deletion and sign-out with pending data. | Tests session, localization choice, and retention-sensitive warnings. Exact deletion/pending-data copy awaits product decisions. |
 
-P1-only screens are designed only if their scope is scheduled and specified. Each PNG design must identify its PRD IDs, feature ID, language/direction, data freshness, sync state, privacy state, and primary/secondary actions in an accompanying description or naming convention. Approval is a design input to the technical plan and tasks; it does not bypass the constitution's implementation gates. Future screens must not independently redesign approved navigation, typography hierarchy, colors, buttons, cards, spacing language, icons, status indicators, or feedback unless the Product Owner explicitly approves a design-system change.
+P1-only screens are designed only if their scope is scheduled and specified. Each PNG design must identify its PRD IDs, feature ID, language/direction, data freshness, sync state, privacy state, and primary/secondary actions in an accompanying description or naming convention. Approval is a design input to the technical plan; it does not bypass the constitution's implementation gates. Future screens must not independently redesign approved navigation, typography hierarchy, colors, buttons, cards, spacing language, icons, status indicators, or feedback unless the Product Owner explicitly approves a design-system change.
 
 ## 11. Approved foundation decisions and remaining design inputs
 
@@ -164,4 +164,13 @@ P1-only screens are designed only if their scope is scheduled and specified. Eac
 | UXF-07 | Device locale initially; explicit English/Arabic selection in Profile; locale-aware date/time; 0–9 numeral glyphs by default. | Validate bilingual date/time/numeral layouts in approved PNG designs. |
 | UXF-08 | Offline privacy reduction/friend removal is saved locally; it affects other users only after successful sync. | Final localized warning, Pending/Failed, and recovery states in affected designs. |
 
-Open PRD rules still block exact designs for occurrence deadlines (`OQ-004`), equivalent challenge habits (`OQ-003`), restore limits (`OQ-001`, `OQ-002`), challenge rejoin (`OQ-005`), friend identifiers (`OQ-006`), reporting (`OQ-007`), offline edit conflicts (`OQ-009`), and account deletion/retention (`OQ-008`, `OQ-010`). The architecture also leaves late challenge finalization and unsynced data on sign-out open. The affected final screens wait for those decisions; this foundation does not supply them by assumption.
+Open PRD rules still block exact designs for occurrence deadlines (`OQ-004`), equivalent challenge habits (`OQ-003`), restore limits (`OQ-001`, `OQ-002`), challenge rejoin (`OQ-005`), friend identifiers (`OQ-006`), reporting (`OQ-007`), offline edit conflicts (`OQ-009`), and account deletion/retention (`OQ-008`, `OQ-010`). Late challenge finalization remains open. SL-02 approves account-scoped retention across sign-out with a pending/unknown-work warning; account-deletion retention remains unresolved with SL-22. The affected final screens wait for those decisions; this foundation does not supply them by assumption.
+
+## Lean delivery amendment — 2026-10-01
+
+Default Spec Kit artifacts are concise spec.md and plan.md; tasks may be in the plan. Clarification, separate consistency analysis, tasks.md and review are not mandatory stages. Ask only for blocking product decisions and check consistency during planning. Add deeper artifacts only for concrete persistence, sync, ownership, authorization, cross-user, scoring or destructive privacy risks. Reuse approved source material by reference. CodeRabbit is removed from future gates/dependencies/handoffs; historical review facts remain historical.
+
+UI needs an approved PNG/design before implementation. Codex uses it for hierarchy, sections, states, interactions, visual language and RTL, without design exploration. Implementation is functional and reasonably close; final visual polish is a later Product Owner pass. Verify relevant states/interactions, overflow, structural RTL, compact phones, keyboard/insets and accessibility proportionately. No exhaustive screenshot matrix or pixel-perfect gate. Finalize with analyzer, relevant automated tests, useful lightweight runtime checks, implementation guides and project-state updates.
+
+
+Global temporary feedback may use conventional Flutter snackbars. Inline errors/retry remain with the owning feature. Connectivity banners contain reachability only; durable synchronization awareness and recovery will come from real feature/SL-03 state. The shell does not simulate action counts or synchronization. Approved future sync designs remain reference material for the feature that implements those states.

@@ -9,6 +9,39 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
+  String get todayHeading => 'لنبنِ سلسلة عاداتك';
+
+  @override
+  String get todayHabits => 'عادات اليوم';
+
+  @override
+  String get todayYesterday => 'أمس';
+
+  @override
+  String get todayNoHabits => 'لا توجد عادات بعد';
+
+  @override
+  String get todayNoHabitsHint => 'أنشئ عادتك الأولى وابدأ ببناء روتينك.';
+
+  @override
+  String get todayNothingDue => 'لا توجد عادات مقررة اليوم';
+
+  @override
+  String get todayNothingDueHint =>
+      'عاداتك محفوظة. لا توجد عادات مقررة لهذا اليوم المحلي.';
+
+  @override
+  String get todayUnchecked => 'غير مكتملة';
+
+  @override
+  String get todayMissed => 'فاتت';
+
+  @override
+  String todayMinutes(int minutes) {
+    return '$minutes دقيقة';
+  }
+
+  @override
   String get brandName => 'StreakUp';
 
   @override
@@ -84,9 +117,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String hostPlaceholderSubtitle(String sliceCode) {
-    return 'مضيف الواجهة جاهز لمحتوى الشريحة $sliceCode.';
-  }
+  String get hostPlaceholderSubtitle => 'هذا القسم جاهز للمحتوى القادم.';
 
   @override
   String get networkOnlineTitle => 'متصل';
@@ -107,65 +138,6 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get networkReconnectingDescription =>
       'تتم استعادة الاتصال بالخادم. التغييرات المعلقة محفوظة بأمان على جهازك.';
-
-  @override
-  String get networkSyncingTitle => 'جارٍ المزامنة';
-
-  @override
-  String get networkSyncingDescription =>
-      'تتم الآن مزامنة تغييراتك المحفوظة مع الخادم.';
-
-  @override
-  String get networkSyncFailedTitle => 'مشكلة في المزامنة';
-
-  @override
-  String networkSyncFailedDescription(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other:
-          'تعذرت مزامنة $count تغييرات. بياناتك محفوظة بأمان على هذا الجهاز.',
-      one: 'تعذرت مزامنة تغيير واحد (1). بياناتك محفوظة بأمان على هذا الجهاز.',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String networkSyncFailedCompactTitle(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'تعذرت مزامنة $count تغييرات',
-      one: 'تعذرت مزامنة تغيير واحد (1)',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get networkSyncFailedCompactDescription =>
-      'راجع النشاط المتأثر لمعالجة مشكلة المزامنة.';
-
-  @override
-  String networkPendingQueueBannerTitle(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count تغييرات في انتظار المزامنة',
-      one: 'تغيير واحد (1) في انتظار المزامنة',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get networkPendingQueueBannerDescription =>
-      'تم الحفظ على هذا الجهاز وبانتظار تأكيد الخادم.';
-
-  @override
-  String get networkAuthRequiredTitle => 'الحساب يتطلب انتباهك';
-
-  @override
-  String get networkAuthRequiredDescription =>
-      'تحتاج جلستك إلى مراجعة قبل مزامنة التغييرات. بياناتك المحلية محفوظة بأمان.';
 
   @override
   String get actionStatusPending => 'في انتظار المزامنة';
@@ -204,30 +176,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get feedbackKindError => 'خطأ';
 
   @override
-  String get feedbackKindOffline => 'حالة عدم الاتصال';
-
-  @override
-  String get feedbackKindSync => 'حالة المزامنة';
-
-  @override
-  String get feedbackKindActionRequired => 'إجراء مطلوب';
-
-  @override
-  String get feedbackLocalSavePending =>
-      'تم الحفظ على هذا الجهاز. في انتظار تأكيد الخادم.';
-
-  @override
-  String feedbackBackgroundSyncCoalesced(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count تحديثات مزامنة في الخلفية',
-      one: 'تحديث مزامنة واحد (1) في الخلفية',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String get stateLoadingTitle => 'جارٍ التحميل';
 
   @override
@@ -263,19 +211,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get authEmailLabel => 'البريد الإلكتروني';
 
   @override
-  String get authEmailHint => 'name@example.com';
-
-  @override
   String get authPasswordLabel => 'كلمة المرور';
 
   @override
-  String get authPasswordHint => 'أدخل كلمة المرور';
-
-  @override
   String get authConfirmPasswordLabel => 'تأكيد كلمة المرور';
-
-  @override
-  String get authConfirmPasswordHint => 'أعد إدخال كلمة المرور';
 
   @override
   String get authShowPasswordTooltip => 'إظهار كلمة المرور';
@@ -407,27 +346,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get authSignOutAnywayButton => 'تسجيل الخروج على أي حال';
 
   @override
-  String get authSwitchAccountWarningTitle => 'تبديل الحساب؟';
-
-  @override
-  String get authSwitchAccountWarningLead =>
-      'لا تزال لديك تغييرات في انتظار المزامنة.';
-
-  @override
-  String get authSwitchAccountWarningBody =>
-      'ستبقى مرتبطة بهذا الحساب على هذا الجهاز ولن تكون متاحة أثناء استخدامك لحساب آخر.';
-
-  @override
-  String get authStayOnThisAccountButton => 'البقاء في هذا الحساب';
-
-  @override
-  String get authSwitchAnywayButton => 'التبديل على أي حال';
-
-  @override
   String get authSignOutAction => 'تسجيل الخروج';
-
-  @override
-  String get authSwitchAccountAction => 'تبديل الحساب';
 
   @override
   String get authErrorInvalidCredentials =>
@@ -452,14 +371,6 @@ class AppLocalizationsAr extends AppLocalizations {
       'لم يتم تأكيد بريدك الإلكتروني بعد. افتح الرابط المرسل إليك أو اطلب رسالة جديدة.';
 
   @override
-  String get authErrorVerificationLinkExpired =>
-      'رابط التأكيد غير صالح أو منتهي الصلاحية. اطلب رسالة تأكيد جديدة.';
-
-  @override
-  String get authErrorRecoveryLinkExpired =>
-      'رابط إعادة تعيين كلمة المرور غير صالح أو منتهي الصلاحية. اطلب رابطًا جديدًا.';
-
-  @override
   String get authErrorRateLimited =>
       'طلبات كثيرة جدًا. يرجى الانتظار قليلًا قبل المحاولة مجددًا.';
 
@@ -469,4 +380,140 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get authErrorUnexpected => 'حدث خطأ غير متوقع. يرجى المحاولة مجددًا.';
+
+  @override
+  String get habitCreateTitle => 'إنشاء عادة';
+
+  @override
+  String get habitNew => 'عادة جديدة';
+
+  @override
+  String get habitListSubtitle => 'نظّم عاداتك وواصل تطوير نفسك.';
+
+  @override
+  String get habitActive => 'العادات النشطة';
+
+  @override
+  String get habitDetails => 'تفاصيل العادة';
+
+  @override
+  String get habitName => 'اسم العادة';
+
+  @override
+  String get habitDescription => 'الوصف (اختياري)';
+
+  @override
+  String get habitCategory => 'الأيقونة والفئة';
+
+  @override
+  String get habitSchedule => 'الجدول';
+
+  @override
+  String get habitDaily => 'كل يوم';
+
+  @override
+  String get habitSelectedDays => 'أيام محددة';
+
+  @override
+  String get habitTarget => 'الهدف بالدقائق (اختياري)';
+
+  @override
+  String get habitPrivate => 'خاصة';
+
+  @override
+  String get habitPrivateDescription => 'أنت فقط من يمكنه رؤية هذه العادة.';
+
+  @override
+  String get habitPending => 'بانتظار المزامنة';
+
+  @override
+  String get habitEmpty => 'لا توجد عادات بعد. أنشئ عادتك الأولى.';
+
+  @override
+  String get habitInvalidName => 'أدخل اسم العادة.';
+
+  @override
+  String get habitInvalidSchedule =>
+      'اختر يومًا واحدًا على الأقل ومنطقة زمنية صالحة.';
+
+  @override
+  String get habitInvalidTarget => 'أدخل عددًا صحيحًا موجبًا من الدقائق.';
+
+  @override
+  String get habitStorageError =>
+      'تعذّر حفظ عاداتك أو فتحها. تم الاحتفاظ بالتفاصيل التي أدخلتها.';
+
+  @override
+  String get habitAccountUnavailable => 'سجّل الدخول إلى حسابك لإنشاء عادة.';
+
+  @override
+  String get habitTimezoneError => 'تعذّرت قراءة منطقتك الزمنية. حاول مجددًا.';
+
+  @override
+  String get habitExercise => 'رياضة';
+
+  @override
+  String get habitWater => 'ماء';
+
+  @override
+  String get habitReading => 'قراءة';
+
+  @override
+  String get habitMindfulness => 'تأمل';
+
+  @override
+  String get habitSleep => 'نوم';
+
+  @override
+  String get habitFailed => 'فشلت المزامنة';
+
+  @override
+  String get habitRejectedEntity => 'توجد بالفعل عادة بهذا المعرّف.';
+
+  @override
+  String get habitSynced => 'تمت المزامنة';
+
+  @override
+  String get habitRejectedPayload => 'تعذر على الخادم قبول تفاصيل هذه العادة.';
+
+  @override
+  String get habitRejectedCommand => 'يتعارض أمر الإنشاء مع طلب سابق.';
+
+  @override
+  String get habitDeliveryPending =>
+      'لم يكتمل الإرسال. عادتك محفوظة محليًا؛ أعد المحاولة بعد تسجيل الدخول والاتصال بالإنترنت.';
+
+  @override
+  String get todayCompleted => 'مكتملة';
+
+  @override
+  String get todaySaving => 'جارٍ حفظ الإكمال';
+
+  @override
+  String todayCompleteHabit(String name) {
+    return 'أكمل $name';
+  }
+
+  @override
+  String todayProgress(int completed, int total) {
+    return 'اكتمل $completed من $total';
+  }
+
+  @override
+  String get todayAllComplete => 'اكتملت جميع العادات المطلوبة اليوم.';
+
+  @override
+  String get todayEarlierCheckIns => 'عمليات إكمال سابقة — بانتظار المزامنة';
+
+  @override
+  String get todayCheckInStorageError =>
+      'لم يُحفظ الإكمال. اضغط على زر الإكمال للمحاولة مجددًا.';
+
+  @override
+  String get todayCheckInAccountUnavailable =>
+      'حسابك غير متاح. سجّل الدخول مجددًا لإكمال هذه العادة.';
+
+  @override
+  String get todayOccurrenceUnavailable =>
+      'لم يعد هذا الموعد متاحًا للإكمال. تم تحديث اليوم.';
 }

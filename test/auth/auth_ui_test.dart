@@ -1,59 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:streak_up/app/bootstrap/app_logger.dart';
 import 'package:streak_up/app/theme/app_theme.dart';
 import 'package:streak_up/core/localization/active_locale_resolver.dart';
 import 'package:streak_up/core/localization/app_localizations.dart';
-import 'package:streak_up/core/presentation/feedback/feedback_coordinator.dart';
-import 'package:streak_up/core/presentation/status/status_models.dart';
-import 'package:streak_up/features/auth/application/auth_session_coordinator.dart';
-import 'package:streak_up/features/auth/domain/pending_work_presence.dart';
-import 'package:streak_up/features/auth/presentation/auth_cubit.dart';
-import 'package:streak_up/features/auth/presentation/email_verification_screen.dart';
-import 'package:streak_up/features/auth/presentation/password_recovery_screen.dart';
-import 'package:streak_up/features/auth/presentation/password_recovery_sent_screen.dart';
-import 'package:streak_up/features/auth/presentation/password_reset_screen.dart';
-import 'package:streak_up/features/auth/presentation/registration_screen.dart';
-import 'package:streak_up/features/auth/presentation/session_expired_screen.dart';
-import 'package:streak_up/features/auth/presentation/session_restoring_screen.dart';
-import 'package:streak_up/features/auth/presentation/sign_in_screen.dart';
-import 'package:streak_up/features/auth/presentation/sign_out_warning_sheet.dart';
-import 'package:streak_up/features/auth/presentation/switch_account_warning_view.dart';
-import 'package:streak_up/features/shell/presentation/shell_cubit.dart';
+import 'package:streak_up/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:streak_up/features/auth/presentation/screens/email_verification_screen.dart';
+import 'package:streak_up/features/auth/presentation/screens/password_recovery_screen.dart';
+import 'package:streak_up/features/auth/presentation/screens/password_recovery_sent_screen.dart';
+import 'package:streak_up/features/auth/presentation/screens/password_reset_screen.dart';
+import 'package:streak_up/features/auth/presentation/screens/registration_screen.dart';
+import 'package:streak_up/features/auth/presentation/screens/session_expired_screen.dart';
+import 'package:streak_up/features/auth/presentation/screens/session_restoring_screen.dart';
+import 'package:streak_up/features/auth/presentation/screens/sign_in_screen.dart';
+import 'package:streak_up/features/auth/presentation/sheets/sign_out_warning_sheet.dart';
 
-import 'auth_session_coordinator_test.dart';
+import '../support/fake_auth_repository.dart';
 
 void main() {
   group('SL-02 Bilingual & Responsive UI Matrix (T031)', () {
     late AuthCubit authCubit;
-    late AuthSessionCoordinator coordinator;
+    late FakeAuthRepository repository;
 
     setUp(() {
-      final logger = RedactedAppLogger();
-      final gateway = FakeAuthGateway();
-      final pendingProvider = ConfigurablePendingWorkPresenceProvider();
-      final shellCubit = ShellCubit();
-      final statusCubit = ShellStatusCubit();
-      final feedback = FeedbackCoordinator(logger);
-      final lifecycle = ShellAccountScopeLifecycle(
-        shellCubit,
-        statusCubit,
-        feedback,
-      );
-      coordinator = AuthSessionCoordinator(
-        gateway,
-        pendingProvider,
-        lifecycle,
-        statusCubit,
-        logger,
-      );
-      authCubit = AuthCubit(coordinator);
+      repository = FakeAuthRepository();
+      authCubit = AuthCubit(repository);
     });
 
     tearDown(() async {
       await authCubit.close();
-      coordinator.dispose();
+      await repository.controller.close();
     });
 
     Widget buildTestHost({
@@ -70,9 +46,9 @@ void main() {
           supportedLocales: ActiveLocaleResolver.supportedLocales,
           builder: (context, navigator) {
             return MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                textScaler: TextScaler.linear(textScale),
-              ),
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: TextScaler.linear(textScale)),
               child: navigator!,
             );
           },
@@ -82,7 +58,7 @@ void main() {
     }
 
     testWidgets(
-      'renders all 9 SL-02 screens across compact (320x640), mobile (390x844), and tablet (768x1024) in English LTR and Arabic RTL with 1.3x text scale without overflow',
+      'renders all active SL-02 screens across compact (320x640), mobile (390x844), and tablet (768x1024) in English LTR and Arabic RTL with 1.3x text scale without overflow',
       (tester) async {
         final screens = <Widget>[
           SignInScreen(
@@ -99,20 +75,10 @@ void main() {
             onBackToSignIn: () {},
           ),
           PasswordRecoverySentScreen(onBackToSignIn: () {}),
-          PasswordResetScreen(
-            onPasswordUpdated: () {},
-            onBackToSignIn: () {},
-          ),
+          PasswordResetScreen(onPasswordUpdated: () {}, onBackToSignIn: () {}),
           const SessionRestoringScreen(),
           SessionExpiredScreen(onSignInAgain: () {}),
-          SignOutWarningSheet(
-            onStaySignedIn: () {},
-            onSignOutAnyway: () {},
-          ),
-          SwitchAccountWarningView(
-            onStayOnAccount: () {},
-            onSwitchAnyway: () {},
-          ),
+          SignOutWarningSheet(onStaySignedIn: () {}, onSignOutAnyway: () {}),
         ];
 
         const viewports = <Size>[

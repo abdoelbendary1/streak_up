@@ -1,54 +1,23 @@
-# Implementation Plan: SL-01 — Bilingual App Shell and Shared Feedback
+# Implementation plan: SL-01 — Bilingual shell and temporary feedback
 
-**Branch**: `main` (the local Spec Kit script resolved `001-bilingual-shell-feedback` as the feature identifier; no feature branch is configured) | **Date**: 2026-09-29 | **Spec**: [spec.md](spec.md)
+**Branch:** reimplement/sl01-sl02 | **Amendment:** 2026-10-01
+**Spec:** [spec.md](spec.md) | **Current code:** [shell guide](../../docs/features/shell/IMPLEMENTATION_GUIDE.md)
 
-**Input**: Clarified SL-01 specification and APPROVED entries in [DESIGN_MANIFEST.md](../../docs/design/DESIGN_MANIFEST.md). This is a technical plan only; no Flutter implementation is authorized by this file.
+## Purpose and approved scope
 
-## Summary
+Preserve the four destinations, Inbox/Profile/contextual recovery routing, bilingual locale/RTL, accessible shell chrome and shared primitives. The approved foundation amendment changes global ownership: temporary notifications only; reachability separate from sync; no shell action or inline-error registry. PRD behavior remains controlling; real persistence/sync is SL-03 and later feature work. Historical task/review records remain history.
 
-Build a reusable signed-in Material 3 shell with exactly four labeled primary destinations, global Inbox/Profile actions, and a contextual Sync & Recovery entry. Supply English/Arabic RTL localization, typed shared connection/action status presentation, and centralized accessible feedback. Later slices provide authentication, destination content, network signals, durable action state, and recovery behavior. SL-01 has no product persistence or backend calls.
+## Data flow and ownership
 
-## Technical Context
+GoRouter → selected destination → AppShell → top bar/content/bottom navigation. ShellCubit owns locale presentation only. FeatureRouteHosts supplies feature content. ConnectivityCubit → reachability banner; startup unknown without a real signal. Owning features supply simple Pending/Synced/Failed badge values; network changes cannot acknowledge their actions. FeedbackCoordinator → root SharedFeedbackHost → Flutter ScaffoldMessenger/SnackBar. Feature inline errors/retry remain local. AuthSession invokes bootstrap cleanup of shell locale and temporary feedback without resetting device reachability.
 
-| Item | Current state / planned choice |
-| --- | --- |
-| Language/version | Dart constraint `^3.11.1` in `pubspec.yaml`; installed Flutter SDK version to verify when implementation starts. |
-| Primary dependencies | Currently Flutter and Cupertino Icons only. Plan to add approved `flutter_bloc`, `go_router` with generated typed routes, `get_it` + `injectable`, `gen_l10n`/ARB, and generation tooling at implementation. Resolve compatible versions in the tasks; no package is claimed installed now. |
-| Storage | None for SL-01. No Isar collections, Supabase schema, DTOs, sync cursor, or outbox. |
-| Testing | Flutter widget/unit tests plus localization, route, semantics, and visual checks; Android/iOS device checks when implemented. |
-| Target platform | Android and iOS mobile; English LTR and Arabic RTL. |
-| Project type | Existing Flutter starter app (`lib/main.dart`, `test/widget_test.dart`). |
-| Performance | Keep shell navigation and local presentation responsive without network dependency; no invented numeric latency target. |
-| Constraints | No business logic or service lookup in widgets; no presentation networking; no hard-coded user-facing strings; no product notification history; no false remote success. |
+## Files and boundaries
 
-## Constitution Check
+features/shell/presentation/cubit/shell_cubit.dart; screens/app_shell.dart; widgets/shell_top_bar.dart and shell_bottom_navigation.dart. Shared connectivity/feedback/status widgets remain in core/presentation. Composition/routing stays in app/bootstrap and app/routing; main.dart provides dependencies and one app-wide feedback listener. No shell application/domain/data layer, fake sync engine or generic notification framework.
 
-| Principle | Planning result |
-| --- | --- |
-| PRD authority and traceability | Scope maps to `FR-022`, `FR-023`, `NFR-001`, `NFR-003`, `NFR-008`–`NFR-012`, `UX-003`, `UX-010`–`UX-014`, and SL01-FR-001–017. Destination content remains with owning slices. |
-| Ordered delivery | Spec and clarification exist; PNG gate is approved. This plan was drafted before tasks and implementation. The user later directed a lightweight readiness check instead of full Spec Kit analyze; current implementation authorization is recorded in `docs/PROJECT_STATE.md`. |
-| Correctness and recoverable data | The plan distinguishes local success, Pending, Synced, and Failed; it performs no data writes or sync execution. Persistent failure remains visible through its source/recovery entry. |
-| Privacy and least privilege | Global status and feedback expose only safe summary text and counts, never private habit or friend details. No client route is treated as server authorization. |
-| Verifiable outcomes | Tests and visual checks map to AS-01–AS-17; CodeRabbit review follows implementation and verification. |
+## Data/database impact
 
-**Gate result:** Pass for technical planning. Recheck after design of the presentation contracts. No constitution exception or product change is proposed.
-
-## Architecture and component decisions
-
-1. **Composition:** `main.dart` delegates to a bootstrap/composition layer. `get_it` + `injectable` registers constructor-injected services there. Widgets and application logic receive dependencies through constructors or providers, never direct `GetIt` calls. A global `BlocObserver` reports allowlisted lifecycle/change/error metadata through `AppLogger`; raw states, private content, auth values, and payloads are excluded. Provider and retention choice remains outside SL-01.
-2. **Routing:** Define generated typed `go_router` routes for the four shell destinations and global Inbox, Profile, and Sync & Recovery entries. Preserve branch selection and a predictable return from global routes. Route availability is a presentation contract; SL-02 later owns signed-in redirects and account state, and the server retains authorization. Route destinations accept later feature content. Labeled destination surfaces may be supplied by tests or an explicitly development-only fixture, not represented as implemented product features.
-3. **Presentation state:** A small shell Cubit owns selected destination and presentation-only locale override input where needed. Typed `NetworkState`/connection-view and `ActionSyncStatus` values come from injected streams or controlled test fixtures. SL-01 only maps them to visible text, icons, announcements, and recovery affordances. SL-03 later supplies reachability and sync signals; a device interface does not prove Online. Auth/session action-required remains distinct from Offline and is supplied later by SL-02.
-4. **Feedback:** A central presentation coordinator accepts a localized message key/arguments, semantic severity, optional valid action, and transient/persistent intent. Shared widgets render snackbar, inline, or banner form. Background repetition is coalesced; closing a transient message cannot clear persistent action-level failure. This does not create Inbox events or durable feedback storage.
-5. **Theme and widgets:** Build a Material 3 StreakUp theme from the approved palette and semantic roles in [DESIGN_SYSTEM.md](../../docs/design/DESIGN_SYSTEM.md): background, surface, primary/secondary text, border, primary action, success, warning, error, pending, and information. Use approved 4/8 spacing rhythm and typography roles. Rounded/pill/circular shapes, pastel icon containers, and restrained depth follow the PNGs. Exact radii, font family, weights, shadows, and screen dimensions are implementation choices subject to visual verification; do not declare them approved tokens. Reuse shell top bar, bottom navigation, status badge, attention/offline banner, feedback host, and accessibility primitives where the current references show the same treatment.
-6. **Localization:** Use `gen_l10n` with English and Arabic ARB files. Device English maps to English; device Arabic maps to Arabic; any unsupported device locale falls back to English. Accept a later Profile-supplied explicit locale without storing it in SL-01. Keep all labels/feedback in ARB, locale-aware dates/times, and approved 0–9 numeral glyphs. Let Flutter directionality drive layout; mirror directional controls and traversal, not logos or non-directional symbols.
-
-### Responsive and adaptive layout
-
-Build the shell from available constraints and content size: compact below 360 logical pixels, standard 360–599, and wide at 600 or more. At wide widths, center content within a readable maximum width while preserving the four-destination navigation; do not add tablet panes or new destinations. The approved 390 × 844 canvas guides visual comparison only. Do not hardcode its dimensions, derive pixel tokens from it, or globally scale the interface.
-
-Allow system text scaling, long English/Arabic strings, and short-height or rotated viewports to grow or scroll without clipped actions. Respect safe areas and keyboard view insets, including future destination forms. Keep all four navigation destinations usable at compact widths with icon and readable label where practical. Use direction-aware layout for RTL. Validate these constraints with widget and device checks; no portrait-only assumption or height breakpoint is required.
-
-The focused presentation types and handoff rules are in [data-model.md](data-model.md) and [contracts/presentation.md](contracts/presentation.md). [research.md](research.md) records implementation decisions and open validation. No production data contract is needed for a feature with no persisted product data.
+None. No product persistence, outbox, schema, migrations or remote work. Locale preference persistence belongs to SL-11. Preserve existing logger privacy and auth isolation.
 
 ## Design reference map
 
@@ -66,59 +35,11 @@ Visual authority: feature-specific approved PNG → closest approved reference P
 
 The Create Habit image is approved for later SL-04; it is not an SL-01 screen to build.
 
-## Project Structure
 
-### Documentation (this feature)
+## Implementation steps
 
-```text
-specs/001-bilingual-shell-feedback/
-├── spec.md
-├── plan.md
-├── research.md
-├── data-model.md
-├── quickstart.md
-└── contracts/presentation.md
-```
+Move shell presentation into cubit/screens/widgets; preserve router selection. Remove shell/global action maps, sync counts/states and feedback inline/background registries. Use temporary Flutter snackbars at the app root. Keep actual reusable badges and local error primitives. Adapt removed-internal tests to feature-owned behavior; regenerate DI/routes normally; remove obsolete files and proven-unused strings/dependencies; update guides and project state.
 
-`tasks.md` belongs to the next Spec Kit step and is not created by this plan.
+## Verification, risks and consistency
 
-### Proposed source layout (no files created in this step)
-
-```text
-lib/
-├── main.dart
-├── app/
-│   ├── bootstrap/        # composition, logger, observer, DI setup
-│   ├── routing/          # generated typed route sources and shell wiring
-│   └── theme/            # approved colors, type roles, shared shapes
-├── core/
-│   ├── localization/     # ARB and generated localizations
-│   └── presentation/     # status/feedback contracts and shared widgets
-└── features/
-    └── shell/presentation/ # shell Cubit, top bar, bottom nav, host
-test/
-└── shell/                # navigation, locale, RTL, status, feedback, semantics
-```
-
-The source tree groups only boundaries needed by SL-01. The later feature slices plug into route/content contracts without prebuilding their screens, repositories, or data models.
-
-## Verification and convergence plan
-
-| Evidence | Requirements / scenarios |
-| --- | --- |
-| Widget route tests: four branches, selected state, Inbox/Profile/Review entry and return | SL01-FR-001–004; AS-01–03, AS-10, AS-14 |
-| Locale tests: device en/ar, unsupported fallback en, supplied override, date/time and 0–9 numerals | SL01-FR-005–008; AS-04–07 |
-| RTL, narrow width, large text, touch target and semantics checks | SL01-FR-006–008, 015; AS-06, AS-15 |
-| Controlled Online/Offline/Reconnecting/Syncing/SyncFailed and auth-action-required fixtures | SL01-FR-009–010; AS-08, AS-11 |
-| Pending/Synced/Failed, local save versus remote acknowledgment, persistent recovery | SL01-FR-011–012, 014; AS-09–10, AS-14 |
-| Feedback severity/action/coalescing, loading versus empty versus inline error, global privacy | SL01-FR-013–017; AS-12–17 |
-
-After implementation, use the 390 × 844 reference canvas and compare compact, standard, and wide widths, short heights, orientation changes, and large text with all mapped approved PNGs in English and Arabic RTL. Check top bar, bottom navigation, colors, typography hierarchy, spacing, cards, banners, action labels, and focus order; correct differences before convergence. Device verification covers Android and iOS. Run CodeRabbit review after tests and visual verification for architecture boundaries, widget responsibility, Bloc/Cubit, routes, localization, accessibility, privacy logging, duplication, speculative abstractions, and test coverage; resolve or explicitly disposition findings before feature convergence. Do not configure or run CodeRabbit during planning.
-
-## Research, risks, and readiness
-
-Package versions and code-generation compatibility are implementation-time checks, not assumed facts. Visual token values not explicitly approved require comparison against PNGs. The compact sync banner's example copy can sound like guaranteed automatic recovery; implementation must use state-accurate localized copy and distinguish Failed from Pending. No unresolved product or design decision blocks creating tasks for this scoped plan.
-
-**READY FOR TASKS: YES.** Tasks cite requirement/acceptance IDs and exact approved PNG paths. The user later directed a lightweight readiness check instead of full Spec Kit analyze; see `docs/PROJECT_STATE.md` for the current implementation gate.
-
-
+Analyzer, focused then full tests, git diff --check. Preserve navigation/back/selection, locale/RTL, semantic targets, compact/large-text/keyboard layout, destination edit lifetime and bounded scrolling. Verify transient replacement/expiration, account reset and independent inline retry. Only lightweight runtime checking where useful; no mandatory screenshot comparison, exhaustive matrix or CodeRabbit. The main risks are destination remounting, stale notices after account exit and accidentally acknowledging remote work from connectivity. Existing specs/designs are reused by reference; obsolete global-registry requirements are superseded by this ownership amendment.

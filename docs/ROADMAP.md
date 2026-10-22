@@ -6,10 +6,10 @@
 | Phase | Roadmap / Feature Registry |
 | Scope | Android and iOS v1 P0; P1 only if schedule allows |
 | Product authority | [PRD v1.0](PRD.md) |
-| Governance | [StreakUp Constitution](../.specify/memory/constitution.md) v1.0.0 |
+| Governance | [StreakUp Constitution](../.specify/memory/constitution.md) v2.0.0 |
 | Slice details | [FEATURE_REGISTRY.md](FEATURE_REGISTRY.md) |
 
-This approved roadmap orders **specification and later implementation slices**. It does not authorize code or a production schema. For every feature containing user-facing UI, delivery follows: Feature Specification → Clarification → PNG UI Design → Design Approval → Technical Plan → Tasks → Implementation → Visual Verification. A required screen MUST NOT be implemented until its PNG design is explicitly approved. Technical plans and tasks MUST reference the exact approved PNG files. Store reusable approved visual references in `docs/design/references/` and feature screen designs in `docs/design/screens/<feature-id>/`. The [architecture](ARCHITECTURE.md), [database foundation](DATABASE.md), and [approved UI/UX foundation](UI_UX_FOUNDATION.md) set cross-cutting boundaries. A slice marked blocked may be specified only after its behavior is clarified; unrelated slices may advance independently.
+This approved roadmap orders **specification and later implementation slices**. It does not authorize code or a production schema. For every feature containing user-facing UI, delivery follows: Understand + Specify → Design Reference (if UI exists) → Plan → Implement + Test → Finalize. A required screen MUST NOT be implemented until its PNG design is explicitly approved. Technical plans MUST reference the exact approved PNG files. Store reusable approved visual references in `docs/design/references/` and feature screen designs in `docs/design/screens/<feature-id>/`. The [architecture](ARCHITECTURE.md), [database foundation](DATABASE.md), and [approved UI/UX foundation](UI_UX_FOUNDATION.md) set cross-cutting boundaries. Specifications may record genuine unresolved decisions. Dependent implementation waits for a blocking product decision; independent work may advance.
 
 ## 1. Planning rules
 
@@ -53,7 +53,7 @@ Order numbers are the registry's suggested implementation order, **not** permiss
 | `OQ-001`, `OQ-002` gift receiving and request anti-spam | `SL-15`; nudge policy also needs explicit clarification in `SL-20` | Set balance/abuse limits before transfer/request rules are implemented. |
 | `OQ-003`, `OQ-005` challenge equivalence and rejoin | `SL-16`–`SL-19` | Set eligibility and membership semantics before scoring. |
 | **Late challenge finalization** (architecture product decision) | `SL-18`–`SL-19`, `SL-25` | Set late-arrival cutoff and whether a preserved final ranking may change. |
-| **Unsynced account data on sign-out/switch/deletion** (architecture product decision) | `SL-02`, `SL-03`, `SL-22` | Set retention, access and recovery behavior across account lifecycle. |
+| **Unsynced account data on sign-out/subsequent-sign-in/deletion** (architecture product decision) | `SL-02`, `SL-03`, `SL-22` | SL-02 retains original-account work across sign-out and subsequent sign-in; no dedicated switch in v1 (2026-09-30). Preserve isolation; deletion retention remains a separate decision. |
 | `OQ-008`, `OQ-010` launch jurisdictions and retention | `SL-09`, `SL-22`, release candidate | Define deletion, anonymization, backup/receipt/tombstone retention and launch environment constraints. |
 | `BR-019` required notices, mute and nudge controls | `SL-20`, `SL-21`, `SL-28` | Clarify which notices are required and the permitted mute/rate-limit behavior. |
 | `OQ-007` reporting/admin workflow | **Not scheduled as an implementation slice** | PRD identifies an admin role but leaves its user-facing reporting workflow TBD. Product must define scope and priority before a slice is added. |
@@ -63,3 +63,9 @@ Technical gates remain `T-01` (Isar distribution and at-rest protection), `T-02`
 ## 4. Scope accounting
 
 The registry maps all P0 product features (`P0-F001`–`P0-F013`) and all conditional P1 features (`P1-F001`–`P1-F008`) to slices. P0's minimal preserved challenge result is in `SL-19`; dedicated browsing is P1 `SL-25`. P0 habit creation includes the PRD's optional category/icon input; richer categories/icons remain P1 `SL-23`. P0 friend addition requires the identifier decision `OQ-006`; richer search remains P1 `SL-27`. Basic reminder controls are P0 `SL-10`; fine-grained category preferences are P1 `SL-28`. No P2/P3 capability is in this roadmap.
+
+## Lean delivery amendment — 2026-10-01
+
+Default Spec Kit artifacts are concise spec.md and plan.md; tasks may be in the plan. Clarification, separate consistency analysis, tasks.md and review are not mandatory stages. Ask only for blocking product decisions and check consistency during planning. Add deeper artifacts only for concrete persistence, sync, ownership, authorization, cross-user, scoring or destructive privacy risks. Reuse approved source material by reference. CodeRabbit is removed from future gates/dependencies/handoffs; historical review facts remain historical.
+
+UI needs an approved PNG/design before implementation. Codex uses it for hierarchy, sections, states, interactions, visual language and RTL, without design exploration. Implementation is functional and reasonably close; final visual polish is a later Product Owner pass. Verify relevant states/interactions, overflow, structural RTL, compact phones, keyboard/insets and accessibility proportionately. No exhaustive screenshot matrix or pixel-perfect gate. Finalize with analyzer, relevant automated tests, useful lightweight runtime checks, implementation guides and project-state updates.

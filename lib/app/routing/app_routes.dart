@@ -1,20 +1,28 @@
+import 'package:streak_up/features/habits/presentation/screens/habits_screen.dart';
+import 'package:streak_up/features/habits/presentation/screens/today_screen.dart';
+import 'package:streak_up/features/habits/presentation/cubit/today_cubit.dart';
+import 'package:streak_up/features/habits/domain/repositories/habit_repository.dart';
+import 'package:streak_up/features/habits/domain/use_cases/habit_use_cases.dart';
+import 'package:streak_up/features/habits/presentation/screens/create_habit_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:streak_up/app/routing/feature_route_hosts.dart';
-import 'package:streak_up/app/routing/shell_destination.dart';
+import 'package:streak_up/app/theme/app_colors.dart';
 import 'package:streak_up/core/localization/app_localizations.dart';
-import 'package:streak_up/features/auth/presentation/auth_cubit.dart';
-import 'package:streak_up/features/auth/presentation/email_verification_screen.dart';
-import 'package:streak_up/features/auth/presentation/password_recovery_screen.dart';
-import 'package:streak_up/features/auth/presentation/password_recovery_sent_screen.dart';
-import 'package:streak_up/features/auth/presentation/password_reset_screen.dart';
-import 'package:streak_up/features/auth/presentation/registration_screen.dart';
-import 'package:streak_up/features/auth/presentation/session_expired_screen.dart';
-import 'package:streak_up/features/auth/presentation/session_restoring_screen.dart';
-import 'package:streak_up/features/auth/presentation/sign_in_screen.dart';
-import 'package:streak_up/features/shell/presentation/app_shell.dart';
-import 'package:streak_up/features/shell/presentation/shell_cubit.dart';
+import 'package:streak_up/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:streak_up/features/auth/presentation/screens/email_verification_screen.dart';
+import 'package:streak_up/features/auth/presentation/screens/password_recovery_screen.dart';
+import 'package:streak_up/features/auth/presentation/screens/password_recovery_sent_screen.dart';
+import 'package:streak_up/features/auth/presentation/screens/password_reset_screen.dart';
+import 'package:streak_up/features/auth/presentation/screens/registration_screen.dart';
+import 'package:streak_up/features/auth/presentation/screens/session_expired_screen.dart';
+import 'package:streak_up/features/auth/presentation/screens/session_restoring_screen.dart';
+import 'package:streak_up/features/auth/presentation/screens/sign_in_screen.dart';
+import 'package:streak_up/features/shell/presentation/global_route_shell.dart';
+import 'package:streak_up/features/shell/presentation/models/shell_destination.dart';
+import 'package:streak_up/features/shell/presentation/screens/app_shell.dart';
+import 'package:streak_up/features/shell/presentation/widgets/feature_placeholder.dart';
+import 'package:streak_up/features/shell/presentation/widgets/profile_placeholder.dart';
 
 part 'app_routes.g.dart';
 
@@ -61,15 +69,7 @@ class VerifyEmailRouteData extends GoRouteData with $VerifyEmailRouteData {
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return EmailVerificationScreen(
-      onBackToSignIn: () async {
-        final authCubit = context.read<AuthCubit?>();
-        if (authCubit != null) {
-          await authCubit.requestSignOut(forceAfterWarning: true);
-        }
-        if (context.mounted) {
-          const SignInRouteData().go(context);
-        }
-      },
+      onBackToSignIn: () => context.read<AuthCubit>().signOut(),
     );
   }
 }
@@ -113,8 +113,8 @@ class PasswordResetRouteData extends GoRouteData with $PasswordResetRouteData {
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return PasswordResetScreen(
-      onPasswordUpdated: () => const TodayRouteData().go(context),
-      onBackToSignIn: () => const SignInRouteData().go(context),
+      onPasswordUpdated: () => const SignInRouteData().go(context),
+      onBackToSignIn: () => context.read<AuthCubit>().signOut(),
     );
   }
 }
@@ -127,7 +127,7 @@ class SessionExpiredRouteData extends GoRouteData
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return SessionExpiredScreen(
-      onSignInAgain: () => const SignInRouteData().go(context),
+      onSignInAgain: () => context.read<AuthCubit>().signOut(),
     );
   }
 }
@@ -135,7 +135,10 @@ class SessionExpiredRouteData extends GoRouteData
 @TypedShellRoute<MainShellRouteData>(
   routes: <TypedRoute<RouteData>>[
     TypedGoRoute<TodayRouteData>(path: '/today'),
-    TypedGoRoute<HabitsRouteData>(path: '/habits'),
+    TypedGoRoute<HabitsRouteData>(
+      path: '/habits',
+      routes: [TypedGoRoute<CreateHabitRouteData>(path: 'create')],
+    ),
     TypedGoRoute<ChallengesRouteData>(path: '/challenges'),
     TypedGoRoute<FriendsRouteData>(path: '/friends'),
   ],
@@ -145,37 +148,23 @@ class MainShellRouteData extends ShellRouteData {
 
   @override
   Widget builder(BuildContext context, GoRouterState state, Widget navigator) {
-    final destination = _destinationFromUri(state.uri.path);
-    final shellCubit = context.read<ShellCubit>();
-    if (shellCubit.state.selectedDestination != destination) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!shellCubit.isClosed) {
-          shellCubit.syncDestinationFromRoute(destination);
-        }
-      });
-    }
+    final destination = switch (state.uri.path) {
+      '/habits' => ShellDestination.habits,
+      '/challenges' => ShellDestination.challenges,
+      '/friends' => ShellDestination.friends,
+      _ => ShellDestination.today,
+    };
 
-    return AppShell(
-      activeDestination: destination,
-      onDestinationSelected: (target) {
-        shellCubit.syncDestinationFromRoute(target);
-        navigateToDestination(context, target);
-      },
-      onOpenInbox: () => const InboxRouteData().push<void>(context),
-      onOpenProfile: () => const ProfileRouteData().push<void>(context),
-      onOpenSyncRecovery: () =>
-          const SyncRecoveryRouteData().push<void>(context),
-      child: navigator,
+    return _ProtectedContent(
+      child: AppShell(
+        selectedIndex: destination.index,
+        onDestinationSelected: (target) =>
+            navigateToDestination(context, target),
+        onOpenInbox: () => const InboxRouteData().push<void>(context),
+        onOpenProfile: () => const ProfileRouteData().push<void>(context),
+        child: navigator,
+      ),
     );
-  }
-
-  static ShellDestination _destinationFromUri(String path) {
-    for (final destination in ShellDestination.values) {
-      if (path.startsWith(destination.path)) {
-        return destination;
-      }
-    }
-    return ShellDestination.today;
   }
 
   static void navigateToDestination(
@@ -200,25 +189,40 @@ class TodayRouteData extends GoRouteData with $TodayRouteData {
 
   @override
   Page<void> buildPage(BuildContext context, GoRouterState state) {
-    final hosts = context.read<FeatureRouteHosts>();
     return NoTransitionPage<void>(
       key: state.pageKey,
-      child: hosts.buildDestination(context, ShellDestination.today),
+      child: BlocProvider(
+        create: (context) => TodayCubit(
+          WatchTodayUseCase(context.read<HabitRepository>()),
+          RefreshTodayUseCase(context.read<HabitRepository>()),
+          CompleteOccurrenceUseCase(context.read<HabitRepository>()),
+        ),
+        child: TodayScreen(
+          onCreate: () => const CreateHabitRouteData().push(context),
+          onOpenHabits: () => const HabitsRouteData().go(context),
+        ),
+      ),
     );
   }
 }
 
 class HabitsRouteData extends GoRouteData with $HabitsRouteData {
   const HabitsRouteData();
-
   @override
-  Page<void> buildPage(BuildContext context, GoRouterState state) {
-    final hosts = context.read<FeatureRouteHosts>();
-    return NoTransitionPage<void>(
-      key: state.pageKey,
-      child: hosts.buildDestination(context, ShellDestination.habits),
-    );
-  }
+  Page<void> buildPage(BuildContext context, GoRouterState state) =>
+      NoTransitionPage<void>(
+        key: state.pageKey,
+        child: HabitsScreen(
+          onCreate: () => const CreateHabitRouteData().push(context),
+        ),
+      );
+}
+
+class CreateHabitRouteData extends GoRouteData with $CreateHabitRouteData {
+  const CreateHabitRouteData();
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      CreateHabitScreen(onCreated: () => const HabitsRouteData().go(context));
 }
 
 class ChallengesRouteData extends GoRouteData with $ChallengesRouteData {
@@ -226,10 +230,22 @@ class ChallengesRouteData extends GoRouteData with $ChallengesRouteData {
 
   @override
   Page<void> buildPage(BuildContext context, GoRouterState state) {
-    final hosts = context.read<FeatureRouteHosts>();
     return NoTransitionPage<void>(
       key: state.pageKey,
-      child: hosts.buildDestination(context, ShellDestination.challenges),
+      child: SingleChildScrollView(
+        child: FeaturePlaceholder(
+          key: const ValueKey('shell_host_challenges'),
+          title: AppLocalizations.of(context).hostPlaceholderTitle(
+            ShellDestination.challenges.localizedLabel(
+              AppLocalizations.of(context),
+            ),
+          ),
+          description: AppLocalizations.of(context).hostPlaceholderSubtitle,
+          iconColor: AppColors.greenDark,
+          iconBackground: AppColors.selectedGreenPill,
+          icon: ShellDestination.challenges.selectedIcon,
+        ),
+      ),
     );
   }
 }
@@ -239,10 +255,22 @@ class FriendsRouteData extends GoRouteData with $FriendsRouteData {
 
   @override
   Page<void> buildPage(BuildContext context, GoRouterState state) {
-    final hosts = context.read<FeatureRouteHosts>();
     return NoTransitionPage<void>(
       key: state.pageKey,
-      child: hosts.buildDestination(context, ShellDestination.friends),
+      child: SingleChildScrollView(
+        child: FeaturePlaceholder(
+          key: const ValueKey('shell_host_friends'),
+          title: AppLocalizations.of(context).hostPlaceholderTitle(
+            ShellDestination.friends.localizedLabel(
+              AppLocalizations.of(context),
+            ),
+          ),
+          description: AppLocalizations.of(context).hostPlaceholderSubtitle,
+          iconColor: AppColors.greenDark,
+          iconBackground: AppColors.selectedGreenPill,
+          icon: ShellDestination.friends.selectedIcon,
+        ),
+      ),
     );
   }
 }
@@ -253,12 +281,20 @@ class InboxRouteData extends GoRouteData with $InboxRouteData {
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    final hosts = context.read<FeatureRouteHosts>();
     final l10n = AppLocalizations.of(context);
-    return GlobalRouteShell(
-      title: l10n.screenInboxTitle,
-      onBack: () => _returnToActiveBranch(context),
-      child: hosts.buildInbox(context),
+    return _ProtectedContent(
+      child: GlobalRouteShell(
+        title: l10n.screenInboxTitle,
+        onBack: () => _returnToShell(context),
+        child: SingleChildScrollView(
+          child: FeaturePlaceholder(
+            key: const ValueKey('global_host_inbox'),
+            title: l10n.screenInboxTitle,
+            description: l10n.screenInboxPlaceholderBody,
+            icon: Icons.notifications_none_rounded,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -269,12 +305,13 @@ class ProfileRouteData extends GoRouteData with $ProfileRouteData {
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    final hosts = context.read<FeatureRouteHosts>();
     final l10n = AppLocalizations.of(context);
-    return GlobalRouteShell(
-      title: l10n.screenProfileTitle,
-      onBack: () => _returnToActiveBranch(context),
-      child: hosts.buildProfile(context),
+    return _ProtectedContent(
+      child: GlobalRouteShell(
+        title: l10n.screenProfileTitle,
+        onBack: () => _returnToShell(context),
+        child: const ProfilePlaceholder(),
+      ),
     );
   }
 }
@@ -285,23 +322,43 @@ class SyncRecoveryRouteData extends GoRouteData with $SyncRecoveryRouteData {
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    final hosts = context.read<FeatureRouteHosts>();
     final l10n = AppLocalizations.of(context);
-    return GlobalRouteShell(
-      title: l10n.screenSyncRecoveryTitle,
-      onBack: () => _returnToActiveBranch(context),
-      child: hosts.buildSyncRecovery(context),
+    return _ProtectedContent(
+      child: GlobalRouteShell(
+        title: l10n.screenSyncRecoveryTitle,
+        onBack: () => _returnToShell(context),
+        child: SingleChildScrollView(
+          child: FeaturePlaceholder(
+            key: const ValueKey('global_host_sync_recovery'),
+            title: l10n.screenSyncRecoveryTitle,
+            description: l10n.screenSyncRecoveryPlaceholderBody,
+            icon: Icons.sync_problem_rounded,
+          ),
+        ),
+      ),
     );
   }
 }
 
-void _returnToActiveBranch(BuildContext context) {
+void _returnToShell(BuildContext context) {
   final router = GoRouter.of(context);
   if (router.canPop()) {
     router.pop();
     return;
   }
-  final activeDestination =
-      context.read<ShellCubit>().state.selectedDestination;
-  MainShellRouteData.navigateToDestination(context, activeDestination);
+  // A standalone global deep link has no earlier shell page to return to.
+  const TodayRouteData().go(context);
+}
+
+// A redirect may animate the outgoing page; revoke its content immediately.
+class _ProtectedContent extends StatelessWidget {
+  const _ProtectedContent({required this.child});
+  final Widget child;
+  @override
+  Widget build(BuildContext context) {
+    final canAccess = context.select(
+      (AuthCubit cubit) => cubit.state.canAccessProtected,
+    );
+    return canAccess ? child : const SizedBox.shrink();
+  }
 }

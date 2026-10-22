@@ -1,35 +1,33 @@
+import '../support/test_app.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:streak_up/app/bootstrap/app_logger.dart';
-import 'package:streak_up/app/routing/feature_route_hosts.dart';
+import 'package:streak_up/core/logging/app_logger.dart';
 import 'package:streak_up/app/theme/app_colors.dart';
 import 'package:streak_up/app/theme/app_spacing.dart';
 import 'package:streak_up/core/presentation/feedback/feedback_coordinator.dart';
-import 'package:streak_up/core/presentation/status/status_models.dart';
-import 'package:streak_up/core/presentation/status/widgets/action_sync_status_badge.dart';
-import 'package:streak_up/core/presentation/status/widgets/shell_status_banner.dart';
+import 'package:streak_up/core/presentation/connectivity/connectivity_cubit.dart';
+import 'package:streak_up/core/presentation/connectivity/widgets/connectivity_banner.dart';
 import 'package:streak_up/core/presentation/widgets/streak_up_wordmark.dart';
-import 'package:streak_up/features/shell/presentation/shell_cubit.dart';
+import 'package:streak_up/features/shell/presentation/cubit/shell_cubit.dart';
 import 'package:streak_up/features/shell/presentation/widgets/shell_bottom_navigation.dart';
-import 'package:streak_up/main.dart';
 
 void main() {
   group('T046 — Visual & Responsive Verification against Approved PNGs and Tokens', () {
-    late RedactedAppLogger logger;
+    late AppLogger logger;
     late ShellCubit shellCubit;
-    late ShellStatusCubit statusCubit;
+    late ConnectivityCubit connectivityCubit;
     late FeedbackCoordinator feedbackCoordinator;
 
     setUp(() {
-      logger = RedactedAppLogger();
+      logger = AppLogger();
       shellCubit = ShellCubit();
-      statusCubit = ShellStatusCubit();
+      connectivityCubit = ConnectivityCubit();
       feedbackCoordinator = FeedbackCoordinator(logger);
     });
 
     tearDown(() async {
       await shellCubit.close();
-      await statusCubit.close();
+      await connectivityCubit.close();
       await feedbackCoordinator.close();
     });
 
@@ -75,31 +73,18 @@ void main() {
         ];
 
         await tester.pumpWidget(
-          StreakUpShellApp(
+          TestApp(
             shellCubit: shellCubit,
-            statusCubit: statusCubit,
+            connectivityCubit: connectivityCubit,
             feedbackCoordinator: feedbackCoordinator,
-            routeHosts: FeatureRouteHosts.custom(
-              todayBuilder: (context) => const Column(
+
+            todayBuilder: (context) => const SingleChildScrollView(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  ActionStatusRow(
-                    projection: ActionStatusProjection(
-                      actionKey: 'verify_pending',
-                      actionLabel: 'Morning Stretch',
-                      isCompletedLocally: true,
-                      remoteSyncStatus: ActionSyncStatus.pending,
-                    ),
-                  ),
+                  Text('Morning Stretch'),
                   SizedBox(height: AppSpacing.sm),
-                  ActionStatusRow(
-                    projection: ActionStatusProjection(
-                      actionKey: 'verify_failed',
-                      actionLabel: 'Hydration Goal',
-                      isCompletedLocally: true,
-                      remoteSyncStatus: ActionSyncStatus.failed,
-                    ),
-                  ),
+                  Text('Hydration Goal'),
                 ],
               ),
             ),
@@ -107,14 +92,7 @@ void main() {
           ),
         );
 
-        statusCubit.updateStatus(
-          const ShellStatusState(
-            networkState: NetworkState.syncFailed,
-            issueCause: ConnectivityIssueCause.backendUnreachable,
-            pendingCount: 1,
-            failedCount: 1,
-          ),
-        );
+        connectivityCubit.setState(NetworkState.offline);
 
         for (final locale in const <Locale>[Locale('en'), Locale('ar')]) {
           shellCubit.setLocaleOverride(locale);
@@ -141,12 +119,12 @@ void main() {
               find.byKey(const ValueKey<String>('shell_top_action_profile')),
               findsOneWidget,
             );
-            expect(find.byType(ShellStatusBanner), findsOneWidget);
+            expect(find.byType(ConnectivityBanner), findsOneWidget);
             expect(find.byType(ShellBottomNavigation), findsOneWidget);
 
             // On wide widths (>= 600), verify body content is constrained to <= 560px and centered.
             if (viewport.size.width >= AppSpacing.wideWidthMin) {
-              final bannerBox = tester.getRect(find.byType(ShellStatusBanner));
+              final bannerBox = tester.getRect(find.byType(ConnectivityBanner));
               expect(
                 bannerBox.width,
                 lessThanOrEqualTo(AppSpacing.maxReadableContentWidth),

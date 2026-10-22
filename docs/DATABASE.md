@@ -7,9 +7,9 @@
 | Phase | Database Foundation |
 | Product authority | [PRD v1.0](PRD.md) |
 | Architecture | [ARCHITECTURE.md](ARCHITECTURE.md): Bloc/Cubit, Isar, Supabase, `go_router` approved |
-| Governance | [StreakUp Constitution](../.specify/memory/constitution.md) v1.0.0 |
+| Governance | [StreakUp Constitution](../.specify/memory/constitution.md) v2.0.0 |
 
-This is an approved database foundation, **not a production schema**. It creates no Supabase project, migration, table, function, Isar collection, or application feature. Feature schemas follow the constitution's PRD alignment → specification → clarification → plan → tasks → consistency analysis → implementation → verification sequence. Product rules marked open in the PRD remain open here.
+This is an approved database foundation, **not a production schema**. It creates no Supabase project, migration, table, function, Isar collection, or application feature. Feature schemas follow the Constitution's Lean Feature Workflow; planning includes consistency checking and proportionate data contracts where persistence, sync or authorization requires them. Product rules marked open in the PRD remain open here.
 
 ## 1. Boundary and database principles
 

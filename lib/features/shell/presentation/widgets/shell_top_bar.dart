@@ -4,7 +4,7 @@ import 'package:streak_up/app/theme/app_spacing.dart';
 import 'package:streak_up/core/localization/app_localizations.dart';
 import 'package:streak_up/core/presentation/widgets/streak_up_wordmark.dart';
 
-/// Shared root top bar (`T016`, `SL01-FR-003`, `SL01-FR-015`, `AS-02`, `AS-15`).
+/// Shared root top bar.
 ///
 /// Displays the approved StreakUp wordmark (`LOGO.png`, unmirrored in RTL) and
 /// separate Inbox and Profile global action buttons with 48x48 logical-pixel
@@ -25,7 +25,7 @@ class ShellTopBar extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isCompact = constraints.maxWidth < AppSpacing.compactWidthMax;
-        final wordmarkHeight = isCompact ? 26.0 : 32.0;
+        final wordmarkHeight = isCompact ? 36.0 : 44.0;
 
         return Padding(
           padding: EdgeInsetsDirectional.symmetric(
@@ -77,34 +77,23 @@ class _CircularTopActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: label,
-      child: InkWell(
-        key: buttonKey,
-        customBorder: const CircleBorder(),
-        onTap: onPressed,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minWidth: AppSpacing.minTouchTarget,
-            minHeight: AppSpacing.minTouchTarget,
-          ),
-          child: Center(
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: const BoxDecoration(
-                color: AppColors.iconContainerNeutral,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                color: AppColors.navy,
-                size: 22,
-              ),
-            ),
-          ),
+    return IconButton(
+      key: buttonKey,
+      tooltip: label,
+      onPressed: onPressed,
+      constraints: const BoxConstraints(
+        minWidth: AppSpacing.minTouchTarget,
+        minHeight: AppSpacing.minTouchTarget,
+      ),
+      padding: const EdgeInsets.all(6),
+      icon: Container(
+        width: 36,
+        height: 36,
+        decoration: const BoxDecoration(
+          color: AppColors.iconContainerNeutral,
+          shape: BoxShape.circle,
         ),
+        child: Icon(icon, color: AppColors.navy, size: 22),
       ),
     );
   }

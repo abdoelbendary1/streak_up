@@ -163,3 +163,8 @@ A user receives consistent success, information, warning, recoverable error, off
 - The approved visual identity and screen PNGs establish palette, logo, icon, and common layout direction. The exact typeface is not approved, and the approved SL-01 variants are tracked in docs/PROJECT_STATE.md. This specification does not decide visual tokens or screen layouts.
 
 
+
+
+## Approved foundation amendment — 2026-10-01
+
+Delivery follows the Lean Feature Workflow in the stage playbook; separate clarification, tasks, analysis, exhaustive visual comparison and review are not mandatory. Global feedback owns temporary notifications only; feature inline errors and recovery stay local. Connectivity is separate from synchronization; Shell owns no action sync map or future infrastructure. Earlier acceptance scenarios describing those global internal registries are superseded by feature-owned errors/statuses, preserving actual user behavior and future PRD sync requirements. The implementation guide and current plan describe final code. Historical completed tasks and review facts do not add future gates. Product behavior, account isolation and approved designs are preserved.

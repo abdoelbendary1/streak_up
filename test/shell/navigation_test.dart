@@ -1,75 +1,51 @@
+import '../support/test_app.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:streak_up/app/bootstrap/app_logger.dart';
-import 'package:streak_up/app/routing/feature_route_hosts.dart';
-import 'package:streak_up/app/routing/shell_destination.dart';
+import 'package:go_router/go_router.dart';
+import 'package:streak_up/app/routing/app_routes.dart';
+import 'package:streak_up/core/logging/app_logger.dart';
+import 'package:streak_up/features/shell/presentation/models/shell_destination.dart';
 import 'package:streak_up/core/presentation/feedback/feedback_coordinator.dart';
-import 'package:streak_up/core/presentation/status/status_models.dart';
-import 'package:streak_up/features/shell/presentation/shell_cubit.dart';
-import 'package:streak_up/main.dart';
+import 'package:streak_up/core/presentation/connectivity/connectivity_cubit.dart';
+import 'package:streak_up/features/shell/presentation/cubit/shell_cubit.dart';
+import 'package:streak_up/features/shell/presentation/widgets/shell_bottom_navigation.dart';
 
 void main() {
   group('US1 — Navigation & Shell Structure (T012–T024, SL01-FR-001–004, AS-01–03)', () {
-    late RedactedAppLogger logger;
+    late GoRouter router;
+    late AppLogger logger;
     late ShellCubit shellCubit;
-    late ShellStatusCubit statusCubit;
+    late ConnectivityCubit connectivityCubit;
     late FeedbackCoordinator feedbackCoordinator;
-    late FeatureRouteHosts injectedHosts;
 
     setUp(() {
-      logger = RedactedAppLogger();
+      router = createTestRouter();
+      logger = AppLogger();
       shellCubit = ShellCubit();
-      statusCubit = ShellStatusCubit();
+      connectivityCubit = ConnectivityCubit();
       feedbackCoordinator = FeedbackCoordinator(logger);
-      injectedHosts = FeatureRouteHosts.custom(
-        todayBuilder: (_) => const Text(
-          'INJECTED_TODAY_HOST',
-          key: ValueKey<String>('injected_today'),
-        ),
-        habitsBuilder: (_) => const Text(
-          'INJECTED_HABITS_HOST',
-          key: ValueKey<String>('injected_habits'),
-        ),
-        challengesBuilder: (_) => const Text(
-          'INJECTED_CHALLENGES_HOST',
-          key: ValueKey<String>('injected_challenges'),
-        ),
-        friendsBuilder: (_) => const Text(
-          'INJECTED_FRIENDS_HOST',
-          key: ValueKey<String>('injected_friends'),
-        ),
-        inboxBuilder: (_) => const Text(
-          'INJECTED_INBOX_HOST',
-          key: ValueKey<String>('injected_inbox'),
-        ),
-        profileBuilder: (_) => const Text(
-          'INJECTED_PROFILE_HOST',
-          key: ValueKey<String>('injected_profile'),
-        ),
-        syncRecoveryBuilder: (_) => const Text(
-          'INJECTED_SYNC_RECOVERY_HOST',
-          key: ValueKey<String>('injected_sync_recovery'),
-        ),
-      );
     });
 
     tearDown(() async {
+      router.dispose();
       await shellCubit.close();
-      await statusCubit.close();
+      await connectivityCubit.close();
       await feedbackCoordinator.close();
     });
 
     testWidgets(
-      'Exposes exactly four labeled primary destinations, identifies selected state, and opens injected hosts (AS-01, SL01-FR-001–002)',
+      'Exposes exactly four labeled primary destinations, identifies selected state, and opens placeholder screens (AS-01, SL01-FR-001–002)',
       (tester) async {
         final semanticsHandle = tester.ensureSemantics();
         try {
           await tester.pumpWidget(
-            StreakUpShellApp(
+            TestApp(
+              router: router,
               shellCubit: shellCubit,
-              statusCubit: statusCubit,
+              connectivityCubit: connectivityCubit,
               feedbackCoordinator: feedbackCoordinator,
-              routeHosts: injectedHosts,
+
               simulatedDeviceLocale: const Locale('en'),
             ),
           );
@@ -77,16 +53,33 @@ void main() {
 
           // Exactly four bottom destinations exist.
           expect(ShellDestination.values.length, 4);
-          expect(find.byKey(const ValueKey<String>('shell_bottom_nav_today')), findsOneWidget);
-          expect(find.byKey(const ValueKey<String>('shell_bottom_nav_habits')), findsOneWidget);
-          expect(find.byKey(const ValueKey<String>('shell_bottom_nav_challenges')), findsOneWidget);
-          expect(find.byKey(const ValueKey<String>('shell_bottom_nav_friends')), findsOneWidget);
-
-          // Today is selected initially and shows injected Today host.
-          expect(find.text('INJECTED_TODAY_HOST'), findsOneWidget);
-          expect(shellCubit.state.selectedDestination, ShellDestination.today);
           expect(
-            tester.getSemantics(find.byKey(const ValueKey<String>('shell_bottom_nav_today'))),
+            find.byKey(const ValueKey<String>('shell_bottom_nav_today')),
+            findsOneWidget,
+          );
+          expect(
+            find.byKey(const ValueKey<String>('shell_bottom_nav_habits')),
+            findsOneWidget,
+          );
+          expect(
+            find.byKey(const ValueKey<String>('shell_bottom_nav_challenges')),
+            findsOneWidget,
+          );
+          expect(
+            find.byKey(const ValueKey<String>('shell_bottom_nav_friends')),
+            findsOneWidget,
+          );
+
+          // Today is selected initially and shows Today placeholder.
+          expect(
+            find.byKey(const ValueKey('shell_host_today')),
+            findsOneWidget,
+          );
+          expect(router.routerDelegate.currentConfiguration.uri.path, '/today');
+          expect(
+            tester.getSemantics(
+              find.byKey(const ValueKey<String>('shell_bottom_nav_today')),
+            ),
             matchesSemantics(
               isButton: true,
               hasSelectedState: true,
@@ -97,12 +90,22 @@ void main() {
           );
 
           // Select Habits -> opens Habits host and updates selected semantics.
-          await tester.tap(find.byKey(const ValueKey<String>('shell_bottom_nav_habits')));
+          await tester.tap(
+            find.byKey(const ValueKey<String>('shell_bottom_nav_habits')),
+          );
           await tester.pumpAndSettle();
-          expect(find.text('INJECTED_HABITS_HOST'), findsOneWidget);
-          expect(shellCubit.state.selectedDestination, ShellDestination.habits);
           expect(
-            tester.getSemantics(find.byKey(const ValueKey<String>('shell_bottom_nav_habits'))),
+            find.byKey(const ValueKey('shell_host_habits')),
+            findsOneWidget,
+          );
+          expect(
+            router.routerDelegate.currentConfiguration.uri.path,
+            '/habits',
+          );
+          expect(
+            tester.getSemantics(
+              find.byKey(const ValueKey<String>('shell_bottom_nav_habits')),
+            ),
             matchesSemantics(
               isButton: true,
               hasSelectedState: true,
@@ -113,16 +116,32 @@ void main() {
           );
 
           // Select Challenges -> opens Challenges host.
-          await tester.tap(find.byKey(const ValueKey<String>('shell_bottom_nav_challenges')));
+          await tester.tap(
+            find.byKey(const ValueKey<String>('shell_bottom_nav_challenges')),
+          );
           await tester.pumpAndSettle();
-          expect(find.text('INJECTED_CHALLENGES_HOST'), findsOneWidget);
-          expect(shellCubit.state.selectedDestination, ShellDestination.challenges);
+          expect(
+            find.byKey(const ValueKey('shell_host_challenges')),
+            findsOneWidget,
+          );
+          expect(
+            router.routerDelegate.currentConfiguration.uri.path,
+            '/challenges',
+          );
 
           // Select Friends -> opens Friends host.
-          await tester.tap(find.byKey(const ValueKey<String>('shell_bottom_nav_friends')));
+          await tester.tap(
+            find.byKey(const ValueKey<String>('shell_bottom_nav_friends')),
+          );
           await tester.pumpAndSettle();
-          expect(find.text('INJECTED_FRIENDS_HOST'), findsOneWidget);
-          expect(shellCubit.state.selectedDestination, ShellDestination.friends);
+          expect(
+            find.byKey(const ValueKey('shell_host_friends')),
+            findsOneWidget,
+          );
+          expect(
+            router.routerDelegate.currentConfiguration.uri.path,
+            '/friends',
+          );
         } finally {
           semanticsHandle.dispose();
         }
@@ -133,90 +152,229 @@ void main() {
       'Opens global Inbox and Profile actions from any branch and returns to the active branch (AS-02, AS-03, SL01-FR-003)',
       (tester) async {
         await tester.pumpWidget(
-          StreakUpShellApp(
+          TestApp(
+            router: router,
             shellCubit: shellCubit,
-            statusCubit: statusCubit,
+            connectivityCubit: connectivityCubit,
             feedbackCoordinator: feedbackCoordinator,
-            routeHosts: injectedHosts,
+
             simulatedDeviceLocale: const Locale('en'),
           ),
         );
         await tester.pumpAndSettle();
 
         // Switch to Challenges branch first.
-        await tester.tap(find.byKey(const ValueKey<String>('shell_bottom_nav_challenges')));
+        await tester.tap(
+          find.byKey(const ValueKey<String>('shell_bottom_nav_challenges')),
+        );
         await tester.pumpAndSettle();
-        expect(find.text('INJECTED_CHALLENGES_HOST'), findsOneWidget);
-        expect(shellCubit.state.selectedDestination, ShellDestination.challenges);
+        expect(
+          find.byKey(const ValueKey('shell_host_challenges')),
+          findsOneWidget,
+        );
+        expect(
+          router.routerDelegate.currentConfiguration.uri.path,
+          '/challenges',
+        );
 
         // Open global Inbox action -> opens Inbox outside the bottom bar.
-        await tester.tap(find.byKey(const ValueKey<String>('shell_top_action_inbox')));
+        await tester.tap(
+          find.byKey(const ValueKey<String>('shell_top_action_inbox')),
+        );
         await tester.pumpAndSettle();
-        expect(find.text('INJECTED_INBOX_HOST'), findsOneWidget);
+        expect(find.byKey(const ValueKey('global_host_inbox')), findsOneWidget);
 
         // Return from Inbox -> restores Challenges branch.
-        await tester.tap(find.byKey(const ValueKey<String>('global_route_back_button')));
+        await tester.tap(
+          find.byKey(const ValueKey<String>('global_route_back_button')),
+        );
         await tester.pumpAndSettle();
-        expect(find.text('INJECTED_CHALLENGES_HOST'), findsOneWidget);
-        expect(shellCubit.state.selectedDestination, ShellDestination.challenges);
+        expect(
+          find.byKey(const ValueKey('shell_host_challenges')),
+          findsOneWidget,
+        );
+        expect(
+          router.routerDelegate.currentConfiguration.uri.path,
+          '/challenges',
+        );
 
         // Open global Profile action -> opens Profile and returns to Challenges branch.
-        await tester.tap(find.byKey(const ValueKey<String>('shell_top_action_profile')));
+        await tester.tap(
+          find.byKey(const ValueKey<String>('shell_top_action_profile')),
+        );
         await tester.pumpAndSettle();
-        expect(find.text('INJECTED_PROFILE_HOST'), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('global_host_profile')),
+          findsOneWidget,
+        );
 
-        await tester.tap(find.byKey(const ValueKey<String>('global_route_back_button')));
+        await tester.tap(
+          find.byKey(const ValueKey<String>('global_route_back_button')),
+        );
         await tester.pumpAndSettle();
-        expect(find.text('INJECTED_CHALLENGES_HOST'), findsOneWidget);
-        expect(shellCubit.state.selectedDestination, ShellDestination.challenges);
+        expect(
+          find.byKey(const ValueKey('shell_host_challenges')),
+          findsOneWidget,
+        );
+        expect(
+          router.routerDelegate.currentConfiguration.uri.path,
+          '/challenges',
+        );
       },
     );
 
     testWidgets(
-      'Exposes contextual Sync & Recovery Review entry only when attention is needed and returns to active branch (T024, SL01-FR-004)',
+      'direct typed navigation owns selection across locale changes and global return',
       (tester) async {
         await tester.pumpWidget(
-          StreakUpShellApp(
+          TestApp(
+            router: router,
             shellCubit: shellCubit,
-            statusCubit: statusCubit,
+            connectivityCubit: connectivityCubit,
             feedbackCoordinator: feedbackCoordinator,
-            routeHosts: injectedHosts,
+          ),
+        );
+        await tester.pumpAndSettle();
+        const FriendsRouteData().go(
+          router.routerDelegate.navigatorKey.currentContext!,
+        );
+        await tester.pumpAndSettle();
+        shellCubit.setLocaleOverride(const Locale('ar'));
+        await tester.pumpAndSettle();
+        expect(router.routerDelegate.currentConfiguration.uri.path, '/friends');
+        expect(
+          find.byKey(const ValueKey('shell_host_friends')),
+          findsOneWidget,
+        );
+        expect(
+          Directionality.of(
+            tester.element(find.byKey(const ValueKey('shell_host_friends'))),
+          ),
+          TextDirection.rtl,
+        );
+        expect(
+          tester
+              .widget<ShellBottomNavigation>(find.byType(ShellBottomNavigation))
+              .selectedIndex,
+          ShellDestination.friends.index,
+        );
+        await tester.tap(
+          find.byKey(const ValueKey<String>('shell_top_action_inbox')),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.byKey(const ValueKey<String>('global_route_back_button')),
+        );
+        await tester.pumpAndSettle();
+        expect(router.routerDelegate.currentConfiguration.uri.path, '/friends');
+        expect(
+          find.byKey(const ValueKey('shell_host_friends')),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
+      'compact enlarged English navigation keeps each label on one readable line',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(320, 640));
+        tester.platformDispatcher.textScaleFactorTestValue = 1.3;
+        addTearDown(() async {
+          tester.platformDispatcher.clearTextScaleFactorTestValue();
+          await tester.binding.setSurfaceSize(null);
+        });
+        await tester.pumpWidget(
+          TestApp(
+            router: router,
+            shellCubit: shellCubit,
+            connectivityCubit: connectivityCubit,
+            feedbackCoordinator: feedbackCoordinator,
+
             simulatedDeviceLocale: const Locale('en'),
           ),
         );
         await tester.pumpAndSettle();
+        for (final label in ['Today', 'Habits', 'Challenges', 'Friends']) {
+          final paragraph = tester.renderObject<RenderParagraph>(
+            find.text(label),
+          );
+          expect(
+            paragraph.getBoxesForSelection(
+              TextSelection(baseOffset: 0, extentOffset: label.length),
+            ),
+            hasLength(1),
+            reason: '$label must not leave an orphan character on another line',
+          );
+        }
+        expect(tester.takeException(), isNull);
+      },
+    );
 
-        // When Online with no pending/failed work, Review action is absent.
+    testWidgets(
+      'standalone global routes return to Today when there is no prior page',
+      (tester) async {
+        await tester.pumpWidget(
+          TestApp(
+            router: router,
+            shellCubit: shellCubit,
+            connectivityCubit: connectivityCubit,
+            feedbackCoordinator: feedbackCoordinator,
+          ),
+        );
+        await tester.pumpAndSettle();
+        final context = router.routerDelegate.navigatorKey.currentContext!;
+        for (final open in <void Function(BuildContext)>[
+          (context) => const InboxRouteData().go(context),
+          (context) => const ProfileRouteData().go(context),
+        ]) {
+          open(context);
+          await tester.pumpAndSettle();
+          expect(router.canPop(), isFalse);
+          await tester.tap(
+            find.byKey(const ValueKey<String>('global_route_back_button')),
+          );
+          await tester.pumpAndSettle();
+          expect(router.routerDelegate.currentConfiguration.uri.path, '/today');
+          expect(
+            find.byKey(const ValueKey('shell_host_today')),
+            findsOneWidget,
+          );
+        }
+      },
+    );
+
+    testWidgets(
+      'a feature can open Sync & Recovery and return to its active branch',
+      (tester) async {
+        await tester.pumpWidget(
+          TestApp(
+            router: router,
+            shellCubit: shellCubit,
+            connectivityCubit: connectivityCubit,
+            feedbackCoordinator: feedbackCoordinator,
+          ),
+        );
+        await tester.pumpAndSettle();
         expect(
-          find.byKey(const ValueKey<String>('shell_status_review_action')),
+          find.byKey(const ValueKey('shell_status_review_action')),
           findsNothing,
         );
-
-        // Switch to Habits and report a sync failure.
-        await tester.tap(find.byKey(const ValueKey<String>('shell_bottom_nav_habits')));
+        await tester.tap(find.byKey(const ValueKey('shell_bottom_nav_habits')));
         await tester.pumpAndSettle();
-
-        statusCubit.setNetworkState(
-          NetworkState.syncFailed,
-          failedCount: 1,
+        const SyncRecoveryRouteData().push<void>(
+          router.routerDelegate.navigatorKey.currentContext!,
         );
         await tester.pumpAndSettle();
-
-        // Review button is now discoverable and opens Sync & Recovery host.
-        final reviewButton = find.byKey(
-          const ValueKey<String>('shell_status_review_action'),
+        expect(
+          find.byKey(const ValueKey('global_host_sync_recovery')),
+          findsOneWidget,
         );
-        expect(reviewButton, findsOneWidget);
-        await tester.tap(reviewButton);
+        await tester.tap(
+          find.byKey(const ValueKey('global_route_back_button')),
+        );
         await tester.pumpAndSettle();
-        expect(find.text('INJECTED_SYNC_RECOVERY_HOST'), findsOneWidget);
-
-        // Back returns to Habits branch while failure remains discoverable.
-        await tester.tap(find.byKey(const ValueKey<String>('global_route_back_button')));
-        await tester.pumpAndSettle();
-        expect(find.text('INJECTED_HABITS_HOST'), findsOneWidget);
-        expect(shellCubit.state.selectedDestination, ShellDestination.habits);
-        expect(reviewButton, findsOneWidget);
+        expect(find.byKey(const ValueKey('shell_host_habits')), findsOneWidget);
+        expect(router.routerDelegate.currentConfiguration.uri.path, '/habits');
       },
     );
   });

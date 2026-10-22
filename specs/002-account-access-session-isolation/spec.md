@@ -41,14 +41,14 @@ On launch or return, the app determines which account, if any, can enter the exi
 
 ### User Story 3 — Sign out or use another account safely (Priority: P1)
 
-A person can leave the current account and sign in to another account on the same device. Account A's local data and queued work never appear or execute under Account B.
+A person can sign out of the current account and then sign in to another account on the same device. Only one account is active at a time; no dedicated Switch Account flow exists. Account A's local data and queued work never appear or execute under Account B.
 
 **Independent test:** Move from Account A to signed-out and Account B states using distinct local fixtures, including pending-work fixtures; verify no cross-account view or action.
 
 1. **SL02-AS-11** Given Account A has unsynced local work, when the user requests sign-out, then the app warns that work remains only on this device under Account A and will resume only after Account A signs in again; the user may explicitly proceed, after which the signed-out state replaces Account A's protected UI.
 2. **SL02-AS-12** Given Account A has locally stored data, when Account B becomes active, then no Account A cached content, local action, status, queue, or previous navigation context is visible in Account B's session.
 3. **SL02-AS-13** Given Account B is active, when any account-scoped local or remote operation is attempted, then it is scoped to Account B; Account A's pending work cannot be submitted using Account B's identity.
-4. **SL02-AS-14** Given Account A has unsynced local work, when the user switches to Account B, then the app gives the same explicit warning before allowing the switch, retains the work locally under Account A only, and never displays or synchronizes it under Account B. When Account A signs in again, its retained work becomes available to resume and synchronize under Account A's identity.
+4. **SL02-AS-14** Given Account A has unsynced local work, when the user confirms the sign-out warning and later signs in as Account B, then the app retains work under Account A only and never displays or synchronizes it under Account B. No dedicated switch action or second warning is shown. When Account A signs in again, its retained work becomes available to resume and synchronize under Account A's identity.
 5. **SL02-AS-15** Given a sign-out or account transition is in progress, when it succeeds or fails, then the app shows only the resulting account's eligible UI or a safe account-access state, without briefly rendering previous-account content.
 
 ### User Story 4 — Recover from an invalid session (Priority: P1)
@@ -69,9 +69,9 @@ The app distinguishes a confirmed expired or invalid session from ordinary Offli
 - **SL02-FR-003**: Represent signed out, restoring, authenticated, and confirmed expired/invalid session as distinct account states.
 - **SL02-FR-004**: Represent device Offline and backend unreachable as separate connection conditions; neither alone changes the account state to signed out or invalid (NFR-002).
 - **SL02-FR-005**: Permit a previously authenticated account's eligible cached personal access while offline under its own account boundary; do not promise fresh login or first-time remote access offline.
-- **SL02-FR-006**: Remove protected and previous-account UI when sign-out, account switch, or confirmed invalidation changes the active account.
-- **SL02-FR-007**: Prevent Account A's cached/local data, pending work, and navigation state from being presented or executed as Account B; require account identity at every account-scoped boundary.
-- **SL02-FR-008**: Preserve Account A's unsynced local work under Account A only across sign-out, account switch, and confirmed session expiry (BR-022). Before voluntary sign-out or account switch, show an explicit consequence warning and allow the user to proceed. Account B cannot view, change, or synchronize Account A's work. Account A's work becomes available to resume and synchronize only after Account A signs in or reauthenticates and the same account identity is confirmed. Session expiry preserves the work, hides protected UI, and requires reauthentication without deleting local intent.
+- **SL02-FR-006**: Remove protected and previous-account UI when sign-out, subsequent sign-in as another account, or confirmed invalidation changes the active account.
+- **SL02-FR-007**: Prevent Account A's cached/local data, pending work, and navigation state from being presented or executed as Account B; require account identity at every account-scoped boundary. Reject delayed authentication events from A after sign-out or subsequent sign-in as B; preserve legitimate same-account refresh/restoration and confirmed invalidation.
+- **SL02-FR-008**: Preserve Account A's unsynced local work under Account A only across sign-out, subsequent sign-in as another account, and confirmed session expiry (BR-022). Before voluntary sign-out when work is pending or its presence is unknown, show an explicit consequence warning and allow proceed/cancel. No dedicated account-switch action is provided. Account B cannot view, change, or synchronize Account A's work. Account A's work becomes available to resume and synchronize only after Account A signs in or reauthenticates and the same account identity is confirmed. Session expiry preserves the work, hides protected UI, and requires reauthentication without deleting local intent.
 - **SL02-FR-009**: Keep session secrets and credentials out of UI feedback, URLs, logs, analytics, and other account-visible surfaces; failed attempts must not disclose another user's private information (FR-001, NFR-007).
 - **SL02-FR-010**: Restore an existing session before showing protected content; handle unavailable auth verification without falsely declaring the session valid or invalid.
 - **SL02-FR-011**: Resolve saved/protected destinations against current authentication and authorization after transitions; use a safe default or unavailable state if the destination is no longer eligible.
@@ -94,6 +94,12 @@ Account isolation applies to displayed data, in-memory presentation state, local
 
 ## Clarifications
 
+### Session 2026-09-30
+
+**Product scope amendment — 2026-09-30:** V1 supports one active authenticated account per device at a time. No dedicated Switch Account action or warning is in scope. To use another account, sign out first, then sign in. Sign-out retains pending/unknown-work confirmation. Retained work belongs only to its original account; account isolation, delayed-event rejection, safe restoration and confirmed invalidation remain mandatory. This amendment changes documentation only; production code/tests, historical verification and T035/T036 completion status are unchanged.
+
+This supersedes the dedicated switch portion of the 2026-09-29 clarification retained below as historical provenance. SL02-AS-14 keeps its ID but now covers sign-out followed by sign-in; no second warning is required. SL02-UI-008 is retired and its PNG preserved.
+
 ### Session 2026-09-29
 
 1. **Unsynced account work:** The Product Owner approved local retention under the original account only. Voluntary sign-out or account switch is allowed after an explicit warning that pending work remains on this device and can resume only when that same account signs in again. Another account cannot see, modify, or sync it. Confirmed session expiry preserves the work, hides protected UI, and requires reauthentication; work resumes only after the same account identity is confirmed. SL-03 owns the later sync mechanics.
@@ -108,8 +114,12 @@ SL-01 supplies the signed-in shell, localized navigation, and shared feedback/st
 - **SL02-SC-001**: All SL02-AS-01–19 pass in English and Arabic RTL on Android and iOS, or unavailable platform verification is explicitly recorded.
 - **SL02-SC-002**: Account A content or pending work is never observable or executable in Account B or signed-out state in the defined transition tests; zero known cross-account disclosure defects.
 - **SL02-SC-003**: Every confirmed invalidation removes stale protected UI; Offline and backend-unreachable cases never automatically become Signed Out in the defined state tests.
-- **SL02-SC-004**: Sign-out, account switch, and confirmed session-expiry tests each verify retained work, the required warning or reauthentication state, and same-account-only resumption.
+- **SL02-SC-004**: Sign-out followed by sign-in as another account and confirmed session-expiry tests verify retained work, the sign-out warning or reauthentication state, delayed-event rejection and same-account-only resumption. Dedicated Switch Account UI is excluded.
 
 ## PNG screens and states needed after clarification
 
-Sign In, Registration and Email Verification, Password Recovery by Email initiation/result, Session Restoring, Signed Out, and Session Expired/Reauthentication Required need feature design. Sign-out and account-switch warning/confirmation states with unsynced work also need design. Reuse approved SL-01 shell/status visuals where applicable; no new PNG is approved by this specification.
+Sign In, Registration and Email Verification, Password Recovery by Email initiation/result, Session Restoring, Signed Out, and Session Expired/Reauthentication Required need feature design. The sign-out warning/confirmation state with unsynced work remains required (SL02-UI-007). SL02-UI-008 is retired by the 2026-09-30 decision; preserve its historical PNG and exclude it from active implementation references. Reuse approved SL-01 shell/status visuals where applicable; no new PNG is approved by this specification.
+
+## Approved foundation amendment — 2026-10-01
+
+Delivery follows the Lean Feature Workflow in the stage playbook; separate clarification, tasks, analysis, exhaustive visual comparison and review are not mandatory. Global feedback owns temporary notifications only; feature inline errors and recovery stay local. Connectivity is separate from synchronization; Shell owns no action sync map or future infrastructure. Earlier acceptance scenarios describing those global internal registries are superseded by feature-owned errors/statuses, preserving actual user behavior and future PRD sync requirements. The implementation guide and current plan describe final code. Historical completed tasks and review facts do not add future gates. Product behavior, account isolation and approved designs are preserved.

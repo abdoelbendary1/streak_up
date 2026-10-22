@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:streak_up/app/routing/shell_destination.dart';
 import 'package:streak_up/app/theme/app_colors.dart';
 import 'package:streak_up/app/theme/app_spacing.dart';
 import 'package:streak_up/core/localization/app_localizations.dart';
+import 'package:streak_up/features/shell/presentation/models/shell_destination.dart';
 
-/// Reusable four-destination bottom navigation (`T017`, `SL01-FR-001`–`002`, `SL01-FR-015`).
+/// Reusable four-destination bottom navigation.
 ///
 /// Renders ONLY `Today`, `Habits`, `Challenges`, and `Friends` with the approved
 /// pale-green selected pill (`AppColors.selectedGreenPill`) and dark-green icon/text.
@@ -13,11 +13,11 @@ import 'package:streak_up/core/localization/app_localizations.dart';
 class ShellBottomNavigation extends StatelessWidget {
   const ShellBottomNavigation({
     super.key,
-    required this.selectedDestination,
+    required this.selectedIndex,
     required this.onDestinationSelected,
   });
 
-  final ShellDestination selectedDestination;
+  final int selectedIndex;
   final ValueChanged<ShellDestination> onDestinationSelected;
 
   @override
@@ -26,9 +26,7 @@ class ShellBottomNavigation extends StatelessWidget {
     return DecoratedBox(
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        border: Border(
-          top: BorderSide(color: AppColors.border, width: 1),
-        ),
+        border: Border(top: BorderSide(color: AppColors.border, width: 1)),
       ),
       child: SafeArea(
         top: false,
@@ -47,26 +45,31 @@ class ShellBottomNavigation extends StatelessWidget {
                     horizontal: isCompact ? AppSpacing.xxs : AppSpacing.xs,
                     vertical: AppSpacing.xs,
                   ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      for (final destination in ShellDestination.values)
-                        Expanded(
-                          child: _BottomNavItem(
-                            destination: destination,
-                            label: destination.localizedLabel(l10n),
-                            semanticLabel: destination == selectedDestination
-                                ? l10n.navSemanticsSelected(
-                                    destination.localizedLabel(l10n),
-                                  )
-                                : l10n.navSemanticsUnselected(
-                                    destination.localizedLabel(l10n),
-                                  ),
-                            isSelected: destination == selectedDestination,
-                            isCompact: isCompact,
-                            onTap: () => onDestinationSelected(destination),
-                          ),
-                        ),
+                  // At 320px with enlarged English text, equal Expanded widths
+                  // wrap Challenges despite spare room in Today. Intrinsic columns
+                  // preserve the approved one-line labels without custom measurement.
+                  child: Table(
+                    defaultColumnWidth: const IntrinsicColumnWidth(flex: 1),
+                    children: <TableRow>[
+                      TableRow(
+                        children: <Widget>[
+                          for (final destination in ShellDestination.values)
+                            _BottomNavItem(
+                              destination: destination,
+                              label: destination.localizedLabel(l10n),
+                              semanticLabel: destination.index == selectedIndex
+                                  ? l10n.navSemanticsSelected(
+                                      destination.localizedLabel(l10n),
+                                    )
+                                  : l10n.navSemanticsUnselected(
+                                      destination.localizedLabel(l10n),
+                                    ),
+                              isSelected: destination.index == selectedIndex,
+                              isCompact: isCompact,
+                              onTap: () => onDestinationSelected(destination),
+                            ),
+                        ],
+                      ),
                     ],
                   ),
                 );
@@ -129,6 +132,7 @@ class _BottomNavItem extends StatelessWidget {
                   key: ValueKey<String>(
                     'shell_bottom_nav_pill_${destination.name}',
                   ),
+                  constraints: BoxConstraints(minWidth: isCompact ? 56 : 70),
                   padding: EdgeInsetsDirectional.symmetric(
                     horizontal: isCompact ? AppSpacing.sm : AppSpacing.md,
                     vertical: 6,

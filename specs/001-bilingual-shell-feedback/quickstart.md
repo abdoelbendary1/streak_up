@@ -1,3 +1,5 @@
+> Historical detailed checklist; the amended plan and docs/features/shell/IMPLEMENTATION_GUIDE.md define current owners and Lean finalization. Legacy artifact references below do not reinstate removed global registries.
+
 # SL-01 Implementation and Verification Quickstart
 
 This is a future execution guide for [plan.md](plan.md). Planning created no Flutter code or package changes.
@@ -16,7 +18,7 @@ This is a future execution guide for [plan.md](plan.md). Planning created no Flu
    | Wide, 600 logical pixels or more | Content is centered within a readable maximum width; the same four-destination shell remains usable. |
 
    At each width, check English LTR and Arabic RTL, long strings and system text scaling, safe areas, keyboard insets, short-height scrolling, and orientation changes. Record any overflow, clipping, hidden action, or navigation failure.
-6. Verify Android and iOS behavior where build/device access exists. After tests and visual comparison, run CodeRabbit review and resolve or explicitly disposition findings before SL-01 convergence. Record unavailable checks and their impact.
+6. Verify Android and iOS behavior where build/device access exists. Use proportionate automated/UI checks and the current implementation guide. CodeRabbit and exhaustive visual comparison are removed from future finalization; targeted high-risk review is optional. Record unavailable checks and their impact.
 
 Follow the current `docs/PROJECT_STATE.md` gate: SL-01 implementation is authorized for Antigravity only. A full Spec Kit analyze was not run; do not report it as complete. Do not start SL-02 as part of SL-01.
 

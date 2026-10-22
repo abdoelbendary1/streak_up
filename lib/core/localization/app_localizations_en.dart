@@ -9,6 +9,40 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get todayHeading => 'Let’s build your streaks';
+
+  @override
+  String get todayHabits => 'Today’s habits';
+
+  @override
+  String get todayYesterday => 'Yesterday';
+
+  @override
+  String get todayNoHabits => 'No habits yet';
+
+  @override
+  String get todayNoHabitsHint =>
+      'Create your first habit and start building your routine.';
+
+  @override
+  String get todayNothingDue => 'Nothing due today';
+
+  @override
+  String get todayNothingDueHint =>
+      'Your habits are saved. None are scheduled for this local day.';
+
+  @override
+  String get todayUnchecked => 'Not completed';
+
+  @override
+  String get todayMissed => 'Missed';
+
+  @override
+  String todayMinutes(int minutes) {
+    return '$minutes minutes';
+  }
+
+  @override
   String get brandName => 'StreakUp';
 
   @override
@@ -84,9 +118,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String hostPlaceholderSubtitle(String sliceCode) {
-    return 'Shell host ready for $sliceCode destination content.';
-  }
+  String get hostPlaceholderSubtitle =>
+      'This area is ready for future content.';
 
   @override
   String get networkOnlineTitle => 'Online';
@@ -107,64 +140,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get networkReconnectingDescription =>
       'Restoring connection to the server. Pending changes remain saved on this device.';
-
-  @override
-  String get networkSyncingTitle => 'Syncing';
-
-  @override
-  String get networkSyncingDescription =>
-      'Synchronizing your saved changes with the server.';
-
-  @override
-  String get networkSyncFailedTitle => 'Sync issue';
-
-  @override
-  String networkSyncFailedDescription(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count changes couldn\'t sync. Your data is safe on this device.',
-      one: '1 change couldn\'t sync. Your data is safe on this device.',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String networkSyncFailedCompactTitle(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count changes couldn\'t sync',
-      one: '1 change couldn\'t sync',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get networkSyncFailedCompactDescription =>
-      'Review the affected activity to resolve this sync issue.';
-
-  @override
-  String networkPendingQueueBannerTitle(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count changes waiting to sync',
-      one: '1 change waiting to sync',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get networkPendingQueueBannerDescription =>
-      'Saved on this device and waiting for remote confirmation.';
-
-  @override
-  String get networkAuthRequiredTitle => 'Account attention required';
-
-  @override
-  String get networkAuthRequiredDescription =>
-      'Your session needs attention before changes can sync. Local data remains safe on this device.';
 
   @override
   String get actionStatusPending => 'Pending sync';
@@ -203,30 +178,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackKindError => 'Error';
 
   @override
-  String get feedbackKindOffline => 'Offline status';
-
-  @override
-  String get feedbackKindSync => 'Sync status';
-
-  @override
-  String get feedbackKindActionRequired => 'Action required';
-
-  @override
-  String get feedbackLocalSavePending =>
-      'Saved on this device. Waiting for server confirmation.';
-
-  @override
-  String feedbackBackgroundSyncCoalesced(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count background sync updates in progress',
-      one: '1 background sync update in progress',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String get stateLoadingTitle => 'Loading';
 
   @override
@@ -263,19 +214,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authEmailLabel => 'Email';
 
   @override
-  String get authEmailHint => 'name@example.com';
-
-  @override
   String get authPasswordLabel => 'Password';
 
   @override
-  String get authPasswordHint => 'Enter your password';
-
-  @override
   String get authConfirmPasswordLabel => 'Confirm Password';
-
-  @override
-  String get authConfirmPasswordHint => 'Confirm your password';
 
   @override
   String get authShowPasswordTooltip => 'Show password';
@@ -409,27 +351,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authSignOutAnywayButton => 'Sign Out Anyway';
 
   @override
-  String get authSwitchAccountWarningTitle => 'Switch accounts?';
-
-  @override
-  String get authSwitchAccountWarningLead =>
-      'You still have changes waiting to sync.';
-
-  @override
-  String get authSwitchAccountWarningBody =>
-      'They\'ll stay with this account on this device and won\'t be available while you\'re using another account.';
-
-  @override
-  String get authStayOnThisAccountButton => 'Stay on This Account';
-
-  @override
-  String get authSwitchAnywayButton => 'Switch Anyway';
-
-  @override
   String get authSignOutAction => 'Sign Out';
-
-  @override
-  String get authSwitchAccountAction => 'Switch Account';
 
   @override
   String get authErrorInvalidCredentials =>
@@ -454,14 +376,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your email hasn\'t been verified yet. Open the link in your inbox or request a new email.';
 
   @override
-  String get authErrorVerificationLinkExpired =>
-      'This verification link is invalid or expired. Request a new verification email.';
-
-  @override
-  String get authErrorRecoveryLinkExpired =>
-      'This password reset link is invalid or expired. Request a new reset link.';
-
-  @override
   String get authErrorRateLimited =>
       'Too many requests. Please wait a moment before trying again.';
 
@@ -471,4 +385,145 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authErrorUnexpected => 'Something went wrong. Please try again.';
+
+  @override
+  String get habitCreateTitle => 'Create Habit';
+
+  @override
+  String get habitNew => 'New Habit';
+
+  @override
+  String get habitListSubtitle =>
+      'Manage your habits and keep building a better you.';
+
+  @override
+  String get habitActive => 'Active Habits';
+
+  @override
+  String get habitDetails => 'Habit Details';
+
+  @override
+  String get habitName => 'Habit name';
+
+  @override
+  String get habitDescription => 'Description (optional)';
+
+  @override
+  String get habitCategory => 'Icon & Category';
+
+  @override
+  String get habitSchedule => 'Schedule';
+
+  @override
+  String get habitDaily => 'Every Day';
+
+  @override
+  String get habitSelectedDays => 'Selected Days';
+
+  @override
+  String get habitTarget => 'Target in minutes (optional)';
+
+  @override
+  String get habitPrivate => 'Private';
+
+  @override
+  String get habitPrivateDescription => 'Only you can see this habit.';
+
+  @override
+  String get habitPending => 'Pending sync';
+
+  @override
+  String get habitEmpty => 'No habits yet. Create your first habit.';
+
+  @override
+  String get habitInvalidName => 'Enter a habit name.';
+
+  @override
+  String get habitInvalidSchedule =>
+      'Choose at least one day and a valid timezone.';
+
+  @override
+  String get habitInvalidTarget => 'Enter a positive whole number of minutes.';
+
+  @override
+  String get habitStorageError =>
+      'Unable to save or open your habits. Your entered details are kept.';
+
+  @override
+  String get habitAccountUnavailable =>
+      'Sign in to your account to create a habit.';
+
+  @override
+  String get habitTimezoneError => 'Unable to read your timezone. Try again.';
+
+  @override
+  String get habitExercise => 'Exercise';
+
+  @override
+  String get habitWater => 'Water';
+
+  @override
+  String get habitReading => 'Reading';
+
+  @override
+  String get habitMindfulness => 'Mindfulness';
+
+  @override
+  String get habitSleep => 'Sleep';
+
+  @override
+  String get habitFailed => 'Failed';
+
+  @override
+  String get habitRejectedEntity =>
+      'A habit with this identifier already exists.';
+
+  @override
+  String get habitSynced => 'Synced';
+
+  @override
+  String get habitRejectedPayload =>
+      'The server could not accept these habit details.';
+
+  @override
+  String get habitRejectedCommand =>
+      'This creation command conflicts with an earlier request.';
+
+  @override
+  String get habitDeliveryPending =>
+      'Delivery could not finish. Your local habit is kept; retry when signed in and online.';
+
+  @override
+  String get todayCompleted => 'Completed';
+
+  @override
+  String get todaySaving => 'Saving completion';
+
+  @override
+  String todayCompleteHabit(String name) {
+    return 'Complete $name';
+  }
+
+  @override
+  String todayProgress(int completed, int total) {
+    return '$completed of $total completed';
+  }
+
+  @override
+  String get todayAllComplete => 'All habits due today are completed.';
+
+  @override
+  String get todayEarlierCheckIns => 'Earlier check-ins — pending sync';
+
+  @override
+  String get todayCheckInStorageError =>
+      'Completion was not saved. Tap the completion control to try again.';
+
+  @override
+  String get todayCheckInAccountUnavailable =>
+      'Your account is unavailable. Sign in again to complete this habit.';
+
+  @override
+  String get todayOccurrenceUnavailable =>
+      'This occurrence is no longer available. Today has been refreshed.';
 }

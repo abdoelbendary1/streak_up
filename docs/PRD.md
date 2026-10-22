@@ -9,7 +9,7 @@
 | Status         | Approved — v1 Baseline |
 | Owner          | Abdelrahman Elbendary  |
 | Created        | 2026-09-28             |
-| Last Updated   | 2026-09-28             |
+| Last Updated   | 2026-09-30             |
 | Canonical Path | `docs/PRD.md`          |
 
 **Document authority:** This PRD is the canonical source of truth for StreakUp product behavior and release scope. Technical specifications, architecture documents, implementation plans, and code may refine implementation details but must not silently contradict this PRD.
@@ -446,12 +446,13 @@ No P2 features are currently approved. New P2 items require PRD revision.
 
 **Feature:** P0-F001  
 **Primary Actor:** Regular User  
-**Requirement:** User can register, sign in, sign out, and initiate password recovery. User-specific product data requires authenticated access.
+**Requirement:** User can register, sign in, sign out, and initiate password recovery. User-specific product data requires authenticated access. V1 supports one active authenticated account per device at a time, with no dedicated Switch Account feature. To use another account, sign out and then sign in (Product Owner amendment 2026-09-30).
 
 **Acceptance Criteria**
 
 - [ ] New user can register.
-- [ ] Existing user can sign in and sign out.
+- [ ] Existing user can sign in and sign out; another account requires sign-out followed by sign-in.
+- [ ] Sign-out with pending or unknown unsynced work requires explicit confirmation. Retained work belongs to its original account; another account cannot access or sync it. Delayed authentication events cannot overwrite a newer account transition.
 - [ ] Password recovery can be initiated.
 - [ ] Failed authentication does not expose another user's private information.
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Presentation-only active-locale resolver (`T026`, `SL01-FR-005`–`006`, `AS-04`–`05`).
+/// Presentation-only active-locale resolver.
 ///
 /// Rules:
 /// - If an explicit presentation override is supplied (e.g. from future Profile),
@@ -12,15 +12,9 @@ abstract final class ActiveLocaleResolver {
   static const Locale english = Locale('en');
   static const Locale arabic = Locale('ar');
 
-  static const List<Locale> supportedLocales = <Locale>[
-    english,
-    arabic,
-  ];
+  static const List<Locale> supportedLocales = <Locale>[english, arabic];
 
-  static Locale resolve({
-    Locale? explicitOverride,
-    Locale? deviceLocale,
-  }) {
+  static Locale resolve({Locale? explicitOverride, Locale? deviceLocale}) {
     if (explicitOverride != null) {
       return _normalizeSupported(explicitOverride);
     }

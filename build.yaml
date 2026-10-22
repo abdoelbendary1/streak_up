@@ -1,0 +1,35 @@
+targets:
+  $default:
+    sources:
+      include:
+        - "$package$"
+        - lib/**
+        - test/**
+      exclude:
+        - lib/features/habits/data/local/habit_local_entity.dart
+        - lib/features/habits/data/local/habit_local_entity.g.dart
+        - lib/features/habits/data/local/create_habit_command_local_entity.dart
+        - lib/features/habits/data/local/create_habit_command_local_entity.g.dart
+        - lib/features/habits/data/local/habit_check_in_local_entity.dart
+        - lib/features/habits/data/local/habit_check_in_local_entity.g.dart
+        - lib/features/habits/data/local/create_check_in_command_local_entity.dart
+        - lib/features/habits/data/local/create_check_in_command_local_entity.g.dart
+    dependencies:
+      - ":habit_isar"
+  habit_isar:
+    sources:
+      - lib/features/habits/data/local/habit_local_entity.dart
+      - lib/features/habits/data/local/habit_local_entity.g.dart
+      - lib/features/habits/data/local/create_habit_command_local_entity.dart
+      - lib/features/habits/data/local/create_habit_command_local_entity.g.dart
+      - lib/features/habits/data/local/habit_check_in_local_entity.dart
+      - lib/features/habits/data/local/habit_check_in_local_entity.g.dart
+      - lib/features/habits/data/local/create_check_in_command_local_entity.dart
+      - lib/features/habits/data/local/create_check_in_command_local_entity.g.dart
+    builders:
+      source_gen:combining_builder:
+        options:
+          # Isar generates index helpers calling its own experimental API.
+          # Apply only to the Isar-generated model parts in this target.
+          ignore_for_file:
+            - experimental_member_use

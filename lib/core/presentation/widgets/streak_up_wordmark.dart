@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:streak_up/core/localization/app_localizations.dart';
 
-/// Reusable brand wordmark widget (`T007`, `SL01-FR-001`–`003`, `SL01-FR-007`).
+/// Reusable brand wordmark widget.
 ///
 /// Renders the approved `docs/design/identity/LOGO.png` bytes without redrawing
 /// and preserves left-to-right orientation even in RTL layouts (`matchTextDirection: false`).

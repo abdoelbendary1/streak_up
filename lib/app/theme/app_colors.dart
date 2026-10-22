@@ -41,4 +41,5 @@ abstract final class AppColors {
   static const Color infoBannerBackground = Color(0xFFEFF6FF);
   static const Color infoBannerBorder = Color(0xFFBFDBFE);
   static const Color iconContainerNeutral = Color(0xFFF1F5F9);
+  static const Color statusSyncedBorder = Color(0xFFBBF7D0);
 }

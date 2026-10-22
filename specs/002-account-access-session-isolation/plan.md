@@ -1,32 +1,35 @@
-# Implementation Plan: SL-02 — Account Access and Session Isolation
+# Implementation plan: SL-02 — Account access and session isolation
 
-**Date**: 2026-09-29 | **Spec**: [spec.md](spec.md) | **Gate**: Implementation is authorized and underway. T035 platform verification and T036 acceptance reconciliation remain open before convergence.
+**Branch:** reimplement/sl01-sl02 | **Amendment:** 2026-10-01
+**Spec:** [spec.md](spec.md) | **Current code:** [auth guide](../../docs/features/auth/IMPLEMENTATION_GUIDE.md)
 
-## Summary and authority
+## Scope and data flow
 
-Integrate Supabase Auth with the completed SL-01 shell. Email/password registration and sign-in, email verification before first shell entry, email recovery, session restoration, sign-out, account switching, and confirmed invalidation follow the clarified spec. Approved [SL-02 PNGs](../../docs/design/DESIGN_MANIFEST.md) govern visuals; PRD and spec govern behavior. Retained work belongs to its original account. No product database, Isar collection, or sync engine enters SL-02.
+Preserve PRD FR-001/BR-020/PERM-001, the approved email/password, verification and recovery flows, valid-session admission, serialized transitions, stale-event rejection and A → sign out → B isolation. No dedicated Switch Account feature, product database or SL-03 implementation. Lean delivery uses spec.md/plan.md; consistency checking happens in planning and tasks.md/review are optional.
 
-## Technical context and constitution
+Screen → AuthCubit → AuthSession → AuthRepository → AuthRepositoryImpl → SupabaseAuthDataSource → SDK. Cubit owns loading/errors; session owns authoritative lifecycle/recovery/cleanup. Callback handler validates input; OS subscription lives in bootstrap. Repository contract/models are SDK-free; implementation maps events/evidence/failures; source contains SDK operations and persistence barriers; storage owns secure auth persistence. Bootstrap wires constructor dependencies. GoRouter observes session truth without invoking auth from redirects.
 
-| Area               | Plan                                                                                                                                                                                               |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Platform           | Existing Flutter app; Dart constraint ^3.11.1; Android and iOS; English LTR and Arabic RTL.                                                                                                        |
-| Existing libraries | flutter_bloc, generated typed go_router, get_it/injectable, Flutter localization, shared feedback, AppLogger/RedactedBlocObserver.                                                                 |
-| New library        | Add compatible supabase_flutter during implementation and lock its version. No new state-management library or Dio dependency for Auth.                                                            |
-| Persistence        | Supabase SDK-managed auth session only. No application-owned account metadata, credential store, product schema, local collection, outbox, or migration. Validate SDK secure persistence behavior. |
-| Scope              | SL02-FR-001–013 and SL02-AS-01–19. No habit, challenge, friend, Inbox/Profile persistence, general sync, or account deletion.                                                                      |
+## Files and state ownership
 
-PRD authority, ordered delivery, recoverable local work, privacy, and focused verification are preserved. Implementation tasks T001–T034 are recorded complete; platform verification and acceptance reconciliation remain open. No constitution exception is proposed.
+features/auth/presentation/cubit, screens, widgets and sheets; application/auth_session.dart and auth_callback_handler.dart; domain/models/auth_models.dart and domain/repositories/auth_repository.dart; data/datasources/supabase_auth_data_source.dart, data/repositories/auth_repository_impl.dart and data/storage/secure_auth_storage.dart. Form text, focus and password visibility stay local. Cleanup revokes access before clearing outgoing presentation; device reachability survives. No pass-through use cases, duplicate gateway, base repository, generic service or SDK driver.
 
-## Architecture and minimum contracts
+## Data/database impact
 
-Use the existing presentation → application → domain contract → data adapter direction.
+SDK auth session and PKCE only, through secure storage; remove legacy plaintext auth values without touching unrelated preferences. No Isar collections, custom account store, schema, migration or sync/outbox. Future local work must retain original-account ownership and reopen only after same-account verification, using DATABASE.md contracts.
 
-- **Presentation:** Auth widgets render localized state and dispatch intent to a focused AuthCubit. Form-local editing may stay in widgets; session truth and transitions do not. Shared feedback renders typed non-secret outcomes. Widgets call neither Supabase nor GetIt.
-- **Application:** One auth/session coordinator handles registration, sign-in, recovery request, restore, sign-out, invalidation, and account transition ordering. It consumes an AuthGateway, a pending-work presence contract, and an account-scope lifecycle contract. Avoid wrappers with no real boundary.
-- **Domain:** Minimal immutable AccountId (canonical Supabase Auth user UUID), VerifiedAccount/session snapshot, typed auth failure/transition outcome, and AuthGateway for session lookup, auth events, email/password operations, verification refresh, recovery callback, and sign-out. No SDK types, tokens, credentials, or persistence annotations cross into domain/application. A client-provided ID or email never grants identity or authorization.
-- **Data:** A Supabase Auth adapter maps SDK sessions, users, events, and failures to those contracts and owns subscriptions. Transport failure maps to indeterminate availability, never a fabricated signed-out/authenticated result. Supabase/server authorization remains authoritative for product data.
-- **Composition:** Bootstrap initializes the Supabase client before resolving coordinator/router, using environment-selected URL and publishable key. Existing get_it/injectable registers constructor-injected collaborators. Never ship a service-role secret. Regenerate DI/routes from source; never edit generated files.
+## Approved UI references
+
+Exact files under docs/design/screens/002-account-access-session-isolation/:
+- SL02-UI-001-sign-in.png
+- SL02-UI-002-registration.png
+- SL02-UI-003-email-verification.png
+- SL02-UI-004-password-recovery.png
+- SL02-UI-004B-password-recovery-email-sent.png
+- SL02-UI-005-session-restoring.png
+- SL02-UI-006-session-expired.png
+- SL02-UI-007-sign-out-unsynced-warning.png
+
+The manifest registers these approved references and supporting SL-01 RTL/design tokens. UI-008 remains retired historical material. Implement functional UI reasonably close to approved references; final polish is a later Product Owner pass, without a mandatory screenshot matrix.
 
 ## Auth and connection state
 
@@ -40,7 +43,7 @@ Use the existing presentation → application → domain contract → data adapt
 
 Network Offline and backend-unreachable are separate conditions. A previously established account may retain eligible cached personal access offline under its own boundary, without claiming current remote authorization or permitting fresh remote actions. First-time access cannot be granted offline. Only definitive auth invalidation enters reauthenticationRequired; refresh/transport failure alone does not. SL-01 connection and Pending/Synced/Failed states remain orthogonal. Local account transition success is not remote product-data acknowledgment.
 
-Serialize SDK events and command results. Each account transition advances an epoch; reject late callbacks whose account or epoch no longer matches. Deduplicate equivalent events, and dispose subscriptions with their owner. A stale SDK event must not undo a newer explicit sign-out/switch.
+Serialize SDK events and command results. Each account transition advances an epoch; reject late callbacks whose account or epoch no longer matches. Deduplicate equivalent events, and dispose subscriptions with their owner. A stale SDK event must not undo a newer explicit sign-out or subsequent sign-in as another account.
 
 ## Verification and recovery links
 
@@ -54,9 +57,11 @@ Configure environment-specific redirect origins and Android/iOS app-link or URL 
 
 Extend existing generated typed go_router routes with top-level access, verification, recovery, restoring, and reauthentication destinations. Retain the current four-destination shell and global routes. Router refresh/redirect observes account state. Startup must show a neutral restoring route rather than unconditional /today. All shell/global routes require authenticated verified identity. Access routes redirect an already eligible account to a safe shell destination. Define a state/route redirect table and terminal routes to avoid loops.
 
-Store at most one internal sanitized protected destination after signed-out redirect. Reject external URLs, auth callbacks, credentials, account-specific query data, and stale destinations. After authentication, revalidate it under the active account; otherwise open Today. On sign-out, switch, or confirmed invalidation, block protected rendering first, clear prior route history and saved destination, then show access or the new account. Back navigation must not reveal a prior account. Client routing never replaces server authorization.
+Handle incoming auth callbacks once through a dedicated app/deep-link entry boundary, retaining origin validation and SDK PKCE handling. Redirect decisions derive deterministically from the authoritative session snapshot; they do not launch asynchronous callback ingestion. Keep saved-destination updates and consumption explicit outside redirect evaluation, with one owner and safe same-account restoration. Replace existing ingestion when introducing this boundary; do not duplicate SDK/OS handlers. Cover delayed/duplicate/invalid callbacks, cold/warm recovery and prior-account back history before adoption.
 
-For voluntary sign-out/switch, query account-owned pending-work presence before transition. If pending, show approved warning and require explicit confirmation; cancel preserves the session. An unknown/failed inspection must not be called “no pending work”; show the same conservative retention warning before voluntary exit. After confirmation, close the old scope before binding another. If remote sign-out fails, hide old protected content until true SDK session state is resolved and preserve work. Confirmed expiry hides protected UI immediately, preserves work, and requires reauthentication without a voluntary warning. Reopen retained work only after canonical same-account identity is confirmed.
+Store at most one internal sanitized protected destination after signed-out redirect. Reject external URLs, auth callbacks, credentials, account-specific query data, and stale destinations. After authentication, revalidate it under the active account; otherwise open Today. On sign-out, subsequent sign-in as another account, or confirmed invalidation, block protected rendering first, clear prior route history and saved destination, then show access or the new account. Back navigation must not reveal a prior account. Client routing never replaces server authorization.
+
+Before SL-03 supplies an actual account-owned inventory, voluntary sign-out uses a conservative unknown-work warning. Future integration may query that inventory before transition. If pending, show approved warning and require explicit confirmation; cancel preserves the session. An unknown/failed inspection must not be called “no pending work”; show the same conservative retention warning before voluntary exit. After confirmation, close the old scope before binding another. If remote sign-out fails, hide old protected content until true SDK session state is resolved and preserve work. Confirmed expiry hides protected UI immediately, preserves work, and requires reauthentication without a voluntary warning. Reopen retained work only after canonical same-account identity is confirmed.
 
 ## Account isolation contract for SL-03
 
@@ -70,19 +75,9 @@ Use approved SL02-UI-001–008 and 004B PNGs for their scoped screens, plus appr
 
 Map typed auth failures to localized, actionable, non-enumerating messages. Never put passwords, email addresses, tokens, recovery links, raw SDK errors, exception strings, or session payloads in AppLogger, BlocObserver, feedback, routes, or analytics. Log fixed event names and allowlisted safe metadata only; inspect SDK/platform debug logging. Clear password fields at terminal transitions. Do not create a custom credential cache.
 
-## Verification and implementation sequence
 
-1. Confirm resolved Supabase Flutter/Auth SDK session persistence, events, verification/recovery APIs and configure isolated environment callback allowlists and Android/iOS handlers.
-2. Add domain contracts and adapter; unit-test restore, verification, transport error versus confirmed invalidation, and late events.
-3. Add coordinator/Cubit and account-scope lifecycle; test A → signed out → B → A, warning cancel/confirm, retained-work fixtures, old-epoch callbacks, and invalidation.
-4. Extend typed routing/bootstrap; test startup cover, guarded routes/deep links, redirect termination, no stale frames/back-stack return, and safe post-auth fallback.
-5. Build approved localized views with shared feedback; test English/Arabic RTL, compact/wide widths, text scaling, keyboard/safe area, and semantics.
-6. Run focused unit/widget tests, flutter analyze/test, Android/iOS callbacks and restoration against an isolated Supabase environment, and visual comparison. Report unavailable device checks. Audit logs/routes for secrets and cross-account leaks.
+## Implementation steps, tests and risks
 
-**Plan checks run:** inspected SL-02 spec, project state, design manifest, Spec Kit template/constitution, relevant architecture/database/UI foundation sections, and current dependency, bootstrap, typed-route, logging, and shell entry points. No runtime tests were run because this is documentation only.
+Move files/imports; split SDK operations from result mapping; preserve persistence timing and lifecycle logic; remove global status/error ownership; regenerate DI/routes; run focused auth/session/SDK/callback/recovery/routing/cleanup/UI tests, then full suite/analyzer/diff checks; write actual implementation guides and reconcile state. Keep behavior assertions, adapting fixture construction only. Known release evidence still includes live Supabase configuration and real device callback/secure-storage checks; automated SDK fixtures do not imply those passed. CodeRabbit is removed from delivery. No unrelated migrations or iOS verification on Windows.
 
-## Data Contract decision and next gate
-
-**DATA CONTRACT REQUIRED: NO.** SL-02 introduces no application-owned persistent data needing aligned local/remote models; SDK-managed Auth persistence is infrastructure, and the account-ownership contract above governs future feature data.
-
-**Open technical validation:** exact Supabase SDK APIs and secure persistence; environment redirect allowlists and mobile link association; cold-start callback behavior; failed remote sign-out semantics; and future SL-03 pending-work inspector/store integration. These are technical checks, not reopened product decisions. Implementation is authorized and underway. Next gate: complete or formally disposition T035, then complete T036 acceptance reconciliation before proposing SL-02 convergence.
+The critical risks are early SDK echoes, callback purpose/foreign identity, recovery credential persistence, cleanup failures and late A events after B admission. Preserve explicit storage barriers and identity comparison before admission. Check spec/plan/test agreement while planning; deeper artifacts are warranted only when future persistence/authorization contracts actually exist.

@@ -1,3 +1,5 @@
+<!-- Optional execution aid under the Lean Feature Workflow. Use only when a separate task file meaningfully improves execution; default steps live in plan.md. -->
+
 ---
 
 description: "Task list template for feature implementation"

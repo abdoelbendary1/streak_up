@@ -1,24 +1,19 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:streak_up/app/bootstrap/app_logger.dart';
-import 'package:streak_up/app/bootstrap/redacted_bloc_observer.dart';
-import 'package:streak_up/core/presentation/feedback/feedback_coordinator.dart';
-import 'package:streak_up/core/presentation/status/status_models.dart';
-import 'package:streak_up/features/auth/application/auth_session_coordinator.dart';
-import 'package:streak_up/features/auth/domain/auth_models.dart';
-import 'package:streak_up/features/auth/domain/pending_work_presence.dart';
-import 'package:streak_up/features/auth/presentation/auth_cubit.dart';
-import 'package:streak_up/features/shell/presentation/shell_cubit.dart';
+import 'package:streak_up/core/logging/app_bloc_observer.dart';
+import 'package:streak_up/core/logging/app_logger.dart';
+import 'package:streak_up/features/auth/presentation/cubit/auth_cubit.dart';
 
-import 'auth_session_coordinator_test.dart';
+import '../support/fake_auth_repository.dart';
 
 void main() {
   group('SL-02 Auth Privacy & Telemetry Redaction (T032)', () {
     test(
-      'AppLogger and RedactedBlocObserver never emit emails, passwords, recovery links, verification tokens, access tokens, or refresh tokens',
+      'AppLogger and AppBlocObserver never emit emails, passwords, recovery links, verification tokens, access tokens, or refresh tokens',
       () async {
-        final logger = RedactedAppLogger();
-        final observer = RedactedBlocObserver(logger);
+        final entries = <LogEntry>[];
+        final logger = AppLogger(sink: entries.add);
+        final observer = AppBlocObserver(logger);
 
         const sensitiveEmail = 'private.user@streakup.io';
         const sensitivePassword = 'MySuperSecretPassword!99';
@@ -41,24 +36,7 @@ void main() {
           },
         );
 
-        final gateway = FakeAuthGateway();
-        final pendingProvider = ConfigurablePendingWorkPresenceProvider();
-        final shellCubit = ShellCubit();
-        final statusCubit = ShellStatusCubit();
-        final feedback = FeedbackCoordinator(logger);
-        final lifecycle = ShellAccountScopeLifecycle(
-          shellCubit,
-          statusCubit,
-          feedback,
-        );
-        final coordinator = AuthSessionCoordinator(
-          gateway,
-          pendingProvider,
-          lifecycle,
-          statusCubit,
-          logger,
-        );
-        final authCubit = AuthCubit(coordinator);
+        final authCubit = AuthCubit(FakeAuthRepository());
 
         observer.onCreate(authCubit);
         await authCubit.signIn(
@@ -67,17 +45,16 @@ void main() {
         );
         observer.onChange(
           authCubit,
-          // ignore: invalid_use_of_protected_member
           Change<AuthState>(
-            currentState: const AuthState(),
+            currentState: const AuthState.restoring(),
             nextState: authCubit.state,
           ),
         );
 
-        expect(AccountId('acc-123').toString(), isNot(contains('acc-123')));
         expect(authCubit.state.toString(), isNot(contains(sensitiveEmail)));
+        expect(authCubit.state.toString(), isNot(contains(sensitivePassword)));
 
-        for (final entry in logger.entries) {
+        for (final entry in entries) {
           final serialized = entry.toString();
           expect(serialized, isNot(contains(sensitiveEmail)));
           expect(serialized, isNot(contains(sensitivePassword)));
@@ -87,7 +64,6 @@ void main() {
         }
 
         await authCubit.close();
-        coordinator.dispose();
       },
     );
   });

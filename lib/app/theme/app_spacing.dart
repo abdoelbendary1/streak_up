@@ -14,7 +14,6 @@ abstract final class AppSpacing {
 
   // 390x844 is a design reference canvas only; runtime layouts adapt to actual constraints instead of scaling globally.
   static const double compactWidthMax = 360.0;
-  static const double wideWidthMin = 600.0;
 
   // Wide screens cap and center body content so cards and status banners do not stretch uncomfortably.
   static const double maxReadableContentWidth = 560.0;

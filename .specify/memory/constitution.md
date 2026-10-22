@@ -1,10 +1,10 @@
 <!--
 Sync Impact Report
-- Version change: unratified template -> 1.0.0 (initial ratification)
-- Modified principles: template placeholders -> PRD authority and traceability; specification-driven delivery; deterministic correctness and data integrity; privacy and least privilege; verifiable quality
-- Added sections: Scope and Architecture Boundaries; Delivery and Verification
-- Removed sections: none
-- Follow-up TODOs: none
+- Version: 1.0.0 -> 2.0.0 (incompatible delivery governance amendment)
+- Product Owner approval: foundation reset task, 2026-10-01
+- Changed: Principle II and delivery/review governance only
+- Rationale: lightweight Spec Kit, proportional verification, no mandatory review ceremony
+- Preserved: product authority, traceability, correctness, recoverability, privacy and release readiness
 -->
 
 # StreakUp Constitution
@@ -23,12 +23,21 @@ be replaced by engineering assumptions.
 
 ### II. Specification-Driven, Ordered Delivery
 
-Every feature MUST follow this sequence: PRD alignment, feature specification, clarification, technical
-plan, tasks, consistency analysis, implementation, and verification/convergence. Implementation MUST
-NOT begin until the preceding artifacts exist, applicable ambiguities are resolved or explicitly
-accepted as risks, and consistency analysis has been completed. Tasks MUST identify their requirement
-and acceptance-criteria links. Verification/convergence MUST report unmet work and residual gaps; an
-incomplete feature MUST NOT be represented as complete.
+Every feature MUST follow the Lean Feature Workflow: Understand + Specify, Design Reference when
+user-facing UI exists, Plan, Implement + Test, and Finalize. The default Spec Kit artifacts are one
+concise spec.md (purpose, flows, business rules, acceptance criteria, important edge cases and genuine
+unresolved decisions) and one concise plan.md (data flow, state ownership, boundaries, files,
+data/database impact, steps, tests and risks). Reuse approved information by reference. Tasks MAY live
+inside plan.md; tasks.md and deeper artifacts are optional and justified by technical risk, such as
+persistence, synchronization, ownership, authorization, cross-user operations, scoring or destructive
+privacy operations. Clarification is not a separate mandatory stage; ask the Product Owner only when
+a real product decision blocks implementation. Consistency checking MUST occur during planning, with
+no mandatory standalone analysis stage. User-facing UI MUST have an approved design/PNG before
+implementation. Implementation prioritizes logic, required states, maintainability, organization,
+automated tests and functional UI reasonably close to that reference. Pixel-perfect polish is a later
+Product Owner pass, not an implementation gate. Finalize with analyzer, relevant tests, useful
+lightweight runtime checks, an implementation guide and feature/project-state updates. Verification
+MUST report unmet work and real residual gaps; incomplete work MUST NOT be represented as complete.
 
 ### III. Deterministic Correctness and Recoverable Data
 
@@ -73,9 +82,10 @@ the feature specification, and the repository's established constraints.
 
 ## Delivery and Verification
 
-Feature artifacts and reviews MUST preserve the ordered workflow in Principle II. Consistency analysis
-MUST check that specifications, plans, tasks, and tests agree with one another and retain PRD
-traceability. Verification plans MUST address applicable offline operation, synchronization and
+Feature artifacts MUST preserve the workflow in Principle II. Planning MUST check consistency of
+specifications, plans, implementation steps and tests while retaining PRD traceability. Review is not
+a mandatory feature stage; targeted review is appropriate for high-risk boundaries. CodeRabbit is
+not a delivery gate, dependency or handoff requirement. Verification plans MUST address applicable offline operation, synchronization and
 recovery, privacy, deterministic calculations, Android/iOS behavior, and English/Arabic RTL behavior.
 The plan MUST state which checks were run, their results, and any checks that could not be run.
 
@@ -90,8 +100,8 @@ This constitution governs engineering and delivery practice. It does not superse
 product behavior or scope. If a conflict is discovered, work affected by the conflict MUST pause until
 the Product Owner resolves it and the controlling artifact is updated.
 
-Every feature review MUST verify compliance with this constitution, requirement traceability, and the
-feature's verification evidence. Amendments MUST be reviewed and approved by the Product Owner,
+Finalization MUST verify compliance with this constitution, requirement traceability, and the
+feature's proportionate verification evidence. Amendments MUST be reviewed and approved by the Product Owner,
 document their rationale, and follow semantic versioning: MAJOR for incompatible governance changes,
 MINOR for new or materially expanded principles, and PATCH for clarifications that do not change
 obligations. The ratification and amendment dates MUST reflect the actual approval history. Any
@@ -99,4 +109,4 @@ exception MUST be explicit, scoped, approved by the Product Owner, and recorded 
 expiration or reevaluation condition; exceptions MUST NOT waive PRD requirements or authorize scope
 change.
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-28 | **Last Amended**: 2026-09-28
+**Version**: 2.0.0 | **Ratified**: 2026-09-28 | **Last Amended**: 2026-10-01

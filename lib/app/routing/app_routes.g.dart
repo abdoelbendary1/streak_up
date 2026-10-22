@@ -247,6 +247,13 @@ RouteBase get $mainShellRouteData => ShellRouteData.$route(
       path: '/habits',
       hasOverriddenOnExit: false,
       factory: $HabitsRouteData._fromState,
+      routes: [
+        GoRouteData.$route(
+          path: 'create',
+          hasOverriddenOnExit: false,
+          factory: $CreateHabitRouteData._fromState,
+        ),
+      ],
     ),
     GoRouteData.$route(
       path: '/challenges',
@@ -293,6 +300,27 @@ mixin $HabitsRouteData on GoRouteData {
 
   @override
   String get location => GoRouteData.$location('/habits');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+mixin $CreateHabitRouteData on GoRouteData {
+  static CreateHabitRouteData _fromState(GoRouterState state) =>
+      const CreateHabitRouteData();
+
+  @override
+  String get location => GoRouteData.$location('/habits/create');
 
   @override
   void go(BuildContext context) => context.go(location);

@@ -1,28 +1,76 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:injectable/injectable.dart';
 import 'package:streak_up/app/routing/app_routes.dart';
-import 'package:streak_up/app/routing/shell_destination.dart';
-import 'package:streak_up/features/auth/application/auth_session_coordinator.dart';
-import 'package:streak_up/features/auth/domain/auth_models.dart';
+import 'package:streak_up/features/auth/presentation/cubit/auth_cubit.dart';
 
-/// Router construction and central auth/session redirect guard (`T013`, `T022`–`T024`, `SL02-FR-012`).
+/// Navigation observes AuthCubit; redirects read state synchronously without side effects.
 @lazySingleton
 class AppRouter {
-  AppRouter(AuthSessionCoordinator authCoordinator)
-    : router = createRouter(
-        initialLocation: '/restoring',
-        authCoordinator: authCoordinator,
-      );
+  AppRouter(AuthCubit authCubit, {String initialLocation = '/restoring'}) {
+    final refresh = _AuthRouterRefresh(authCubit, initialLocation);
+    _authRefresh = refresh;
+    router = GoRouter(
+      initialLocation: _safeInitialLocation(initialLocation),
+      refreshListenable: refresh,
+      routes: $appRoutes,
+      redirect: (context, state) => resolveAuthRedirect(
+        authCubit.state,
+        state.uri.path,
+        destination: refresh.destination,
+      ),
+    );
+    refresh.router = router;
+  }
 
-  AppRouter.withInitialDestination(
-    ShellDestination initialDestination, {
-    AuthSessionCoordinator? authCoordinator,
-  }) : router = createRouter(
-         initialLocation: initialDestination.path,
-         authCoordinator: authCoordinator,
-       );
+  late final GoRouter router;
+  _AuthRouterRefresh? _authRefresh;
 
-  final GoRouter router;
+  @factoryMethod
+  static AppRouter create(AuthCubit authCubit) => AppRouter(authCubit);
+
+  @disposeMethod
+  void dispose() {
+    _authRefresh?.dispose();
+    router.dispose();
+  }
+
+  static String? resolveAuthRedirect(
+    AuthState state,
+    String location, {
+    String destination = '/today',
+  }) {
+    String? redirect(String target) => location == target ? null : target;
+    switch (state.status) {
+      case AuthStatus.restoring:
+      case AuthStatus.signingOut:
+        return redirect('/restoring');
+      case AuthStatus.signedOut:
+        if (location == '/password-recovery/reset') {
+          return redirect('/sign-in');
+        }
+        return const {
+              '/sign-in',
+              '/register',
+              '/password-recovery',
+              '/password-recovery/sent',
+            }.contains(location)
+            ? null
+            : redirect('/sign-in');
+      case AuthStatus.verificationRequired:
+        return redirect('/verify-email');
+      case AuthStatus.recoveryRequired:
+        return redirect('/password-recovery/reset');
+      case AuthStatus.reauthenticationRequired:
+        return redirect('/session-expired');
+      case AuthStatus.authenticated:
+        if (!state.canAccessProtected) return redirect('/sign-in');
+        return _authRoutePaths.contains(location)
+            ? redirect(destination)
+            : null;
+    }
+  }
 
   static const Set<String> _authRoutePaths = <String>{
     '/restoring',
@@ -35,135 +83,68 @@ class AppRouter {
     '/session-expired',
   };
 
-  static GoRouter createRouter({
-    String? initialLocation,
-    AuthSessionCoordinator? authCoordinator,
-  }) {
-    final effectiveInitialLocation =
-        initialLocation ?? (authCoordinator != null ? '/restoring' : '/today');
+  static String _safeInitialLocation(String location) {
+    final uri = Uri.tryParse(location);
+    return uri != null &&
+            !uri.hasScheme &&
+            !uri.hasAuthority &&
+            !uri.hasQuery &&
+            !uri.hasFragment &&
+            (_authRoutePaths.contains(uri.path) ||
+                const {
+                  '/today',
+                  '/habits',
+                  '/challenges',
+                  '/friends',
+                  '/inbox',
+                  '/profile',
+                  '/sync-recovery',
+                }.contains(uri.path))
+        ? uri.path
+        : '/today';
+  }
+}
 
-    return GoRouter(
-      initialLocation: effectiveInitialLocation,
-      refreshListenable: authCoordinator,
-      routes: $appRoutes,
-      redirect: authCoordinator == null
-          ? null
-          : (context, state) => resolveAuthRedirect(
-              coordinator: authCoordinator,
-              location: state.uri.path,
-              fullUri: state.uri,
-            ),
-    );
+/// GoRouter refresh listenable subscribing to AuthCubit stream.
+class _AuthRouterRefresh extends ChangeNotifier {
+  _AuthRouterRefresh(this.authCubit, String initialLocation) {
+    final uri = Uri.tryParse(initialLocation);
+    if (uri != null &&
+        !uri.hasScheme &&
+        !uri.hasAuthority &&
+        !uri.hasQuery &&
+        !uri.hasFragment &&
+        const {
+          '/today',
+          '/habits',
+          '/challenges',
+          '/friends',
+          '/inbox',
+          '/profile',
+        }.contains(uri.path)) {
+      destination = uri.path;
+    }
+    _subscription = authCubit.stream.listen((state) {
+      if (state.status == AuthStatus.signingOut ||
+          state.status == AuthStatus.reauthenticationRequired) {
+        destination = '/today';
+      }
+      if (state.status == AuthStatus.signingOut) {
+        router?.go('/restoring');
+      }
+      notifyListeners();
+    });
   }
 
-  /// Central account-state redirect table (`T022`–`T024`, `SL02-FR-003`–`007`, `SL02-FR-012`).
-  static String? resolveAuthRedirect({
-    required AuthSessionCoordinator coordinator,
-    required String location,
-    Uri? fullUri,
-  }) {
-    // Intercept incoming OS auth callbacks (e.g. io.streakup.app://auth-callback or /auth-callback),
-    // forward to coordinator validation, and immediately redirect to a clean, token-free route (`T024`, `T035`).
-    final isCallbackPath =
-        location == '/auth-callback' ||
-        (fullUri != null && fullUri.host.toLowerCase() == 'auth-callback');
-    if (isCallbackPath) {
-      final normalizedCallbackUri = Uri(
-        scheme: (fullUri != null && fullUri.scheme.isNotEmpty)
-            ? fullUri.scheme
-            : 'io.streakup.app',
-        host: 'auth-callback',
-        query: fullUri?.query ?? '',
-        fragment: fullUri?.fragment ?? '',
-      );
-      final isRecoveryAttempt =
-          normalizedCallbackUri.queryParameters['type']?.toLowerCase() ==
-              'recovery' ||
-          normalizedCallbackUri.fragment.toLowerCase().contains(
-            'type=recovery',
-          );
-      coordinator.handleAuthCallbackUri(normalizedCallbackUri);
-      if (isRecoveryAttempt) {
-        return coordinator.snapshot.accountState.canAccessPasswordResetForm
-            ? '/password-recovery/reset'
-            : '/password-recovery';
-      }
-      return switch (coordinator.snapshot.accountState) {
-        AuthAuthenticatedState() =>
-          coordinator.consumePostAuthenticationDestination(),
-        AuthVerificationRequiredState() => '/verify-email',
-        _ => '/sign-in',
-      };
-    }
+  final AuthCubit authCubit;
+  late final StreamSubscription<AuthState> _subscription;
+  GoRouter? router;
+  String destination = '/today';
 
-    final accountState = coordinator.snapshot.accountState;
-    final isAuthRoute = _authRoutePaths.contains(location);
-    final isProtectedRoute = !isAuthRoute;
-
-    // Direct entry to /password-recovery/reset without a validated recovery context
-    // must always redirect to /password-recovery (`T024`, `SL02-FR-005`).
-    if (location == '/password-recovery/reset' &&
-        !accountState.canAccessPasswordResetForm) {
-      return '/password-recovery';
-    }
-
-    switch (accountState) {
-      case AuthRestoringState():
-        if (isProtectedRoute) {
-          coordinator.recordIntendedProtectedDestination(location);
-        }
-        return location == '/restoring' ? null : '/restoring';
-
-      case AuthSignedOutState(:final hasValidatedPasswordResetContext):
-        if (hasValidatedPasswordResetContext) {
-          return location == '/password-recovery/reset' ||
-                  location == '/sign-in'
-              ? null
-              : '/password-recovery/reset';
-        }
-        if (isProtectedRoute) {
-          coordinator.recordIntendedProtectedDestination(location);
-          return '/sign-in';
-        }
-        const allowedSignedOutRoutes = <String>{
-          '/sign-in',
-          '/register',
-          '/password-recovery',
-          '/password-recovery/sent',
-        };
-        return allowedSignedOutRoutes.contains(location) ? null : '/sign-in';
-
-      case AuthVerificationRequiredState():
-        if (isProtectedRoute) {
-          coordinator.recordIntendedProtectedDestination(location);
-        }
-        return location == '/verify-email' ? null : '/verify-email';
-
-      case AuthReauthenticationRequiredState():
-        if (isProtectedRoute) {
-          coordinator.recordIntendedProtectedDestination(location);
-          return '/session-expired';
-        }
-        const allowedReauthRoutes = <String>{
-          '/session-expired',
-          '/sign-in',
-          '/password-recovery',
-          '/password-recovery/sent',
-        };
-        return allowedReauthRoutes.contains(location)
-            ? null
-            : '/session-expired';
-
-      case AuthAuthenticatedState(:final hasValidatedPasswordResetContext):
-        if (hasValidatedPasswordResetContext) {
-          return location == '/password-recovery/reset'
-              ? null
-              : '/password-recovery/reset';
-        }
-        if (isAuthRoute) {
-          return coordinator.consumePostAuthenticationDestination();
-        }
-        return null;
-    }
+  @override
+  @disposeMethod
+  void dispose() {
+    unawaited(_subscription.cancel());
+    super.dispose();
   }
 }
